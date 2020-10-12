@@ -1,0 +1,3 @@
+include ':common-titlebar'
+include ':app'
+rootProject.name = "CommonTitlebar"
