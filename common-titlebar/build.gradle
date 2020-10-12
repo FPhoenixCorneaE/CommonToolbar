@@ -20,9 +20,9 @@ android {
     buildTypes {
         release {
             // 执行proguard混淆
-            minifyEnabled true
+            minifyEnabled false
             // Zipalign优化
-            zipAlignEnabled true
+            zipAlignEnabled false
             // 移除无用的resource文件
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
@@ -31,9 +31,9 @@ android {
         }
         debug {
             // 执行proguard混淆
-            minifyEnabled true
+            minifyEnabled false
             // Zipalign优化
-            zipAlignEnabled true
+            zipAlignEnabled false
             // 移除无用的resource文件
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
