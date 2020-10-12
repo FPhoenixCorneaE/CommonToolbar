@@ -1,0 +1,2 @@
+-dontwarn com.fphoenixcorneae.titlebar.**
+-keep class com.fphoenixcorneae.titlebar.CommonTitleBar{*;}
