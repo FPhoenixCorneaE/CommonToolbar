@@ -47,6 +47,8 @@ dependencies {
     implementation Config.support.constraintLayout
     implementation Config.kotlin.core
     implementation Config.kotlin.kotlinStdlibJdk7
+//    implementation Config.FPhoenixCorneaE.CommonTitlebar
+    implementation project(path: ':common-titlebar')
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

@@ -19,14 +19,10 @@ import android.widget.*
 import android.widget.TextView.OnEditorActionListener
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import com.fphoenixcorneae.ext.dp2px
-import com.fphoenixcorneae.ext.dpToPx
-import com.fphoenixcorneae.ext.screenWidth
-import com.fphoenixcorneae.ext.spToPx
+import com.fphoenixcorneae.ext.*
+import com.fphoenixcorneae.ext.view.isVisible
 import com.fphoenixcorneae.ext.view.setTintColor
 import com.fphoenixcorneae.util.ViewUtil
-import com.fphoenixcorneae.ext.closeKeyboard
-import com.fphoenixcorneae.ext.openKeyboard
 import com.fphoenixcorneae.util.statusbar.StatusBarUtil
 import kotlin.math.max
 
@@ -39,32 +35,27 @@ class CommonTitleBar @JvmOverloads constructor(
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes), View.OnClickListener {
-    private var viewStatusBarFill // 状态栏填充视图
-            : View? = null
+    private var viewStatusBarFill: View? = null // 状态栏填充视图
 
     /**
      * 获取标题栏底部横线
      */
-    var bottomLine // 分隔线视图
-            : View? = null
+    var bottomLine: View? = null // 分隔线视图
         private set
-    private var viewBottomShadow // 底部阴影
-            : View? = null
-    private var rlMain // 主视图
-            : RelativeLayout? = null
+    var viewBottomShadow: View? = null // 底部阴影
+        private set
+    private var rlMain: RelativeLayout? = null // 主视图
 
     /**
      * 获取标题栏左边TextView，对应leftType = textView
      */
-    var leftTextView // 左边TextView
-            : TextView? = null
+    var leftTextView: TextView? = null // 左边TextView
         private set
 
     /**
      * 获取标题栏左边ImageButton，对应leftType = imageButton
      */
-    var leftImageButton // 左边ImageButton
-            : ImageButton? = null
+    var leftImageButton: ImageButton? = null // 左边ImageButton
         private set
 
     /**
@@ -76,15 +67,13 @@ class CommonTitleBar @JvmOverloads constructor(
     /**
      * 获取标题栏右边TextView，对应rightType = textView
      */
-    var rightTextView // 右边TextView
-            : TextView? = null
+    var rightTextView: TextView? = null // 右边TextView
         private set
 
     /**
      * 获取标题栏右边ImageButton，对应rightType = imageButton
      */
-    var rightImageButton // 右边ImageButton
-            : ImageButton? = null
+    var rightImageButton: ImageButton? = null // 右边ImageButton
         private set
 
     /**
@@ -98,20 +87,17 @@ class CommonTitleBar @JvmOverloads constructor(
     /**
      * 获取标题栏中间TextView，对应centerType = textView
      */
-    var centerTextView // 标题栏文字
-            : TextView? = null
+    var centerTextView: TextView? = null // 标题栏文字
         private set
-    var centerSubTextView // 副标题栏文字
-            : TextView? = null
+    var centerSubTextView: TextView? = null // 副标题栏文字
         private set
-    private var progressCenter // 中间进度条,默认隐藏
-            : ProgressBar? = null
+    var progressCenter: ProgressBar? = null // 中间进度条,默认隐藏
+        private set
 
     /**
      * 获取搜索框布局，对应centerType = searchView
      */
-    var centerSearchView // 中间搜索框布局
-            : RelativeLayout? = null
+    var centerSearchView: RelativeLayout? = null // 中间搜索框布局
         private set
 
     /**
@@ -131,21 +117,62 @@ class CommonTitleBar @JvmOverloads constructor(
     /**
      * 获取中间自定义布局视图
      */
-    var centerCustomView // 中间自定义视图
-            : View? = null
+    var centerCustomView: View? = null // 中间自定义视图
         private set
     private var fillStatusBar: Boolean = true // 是否撑起状态栏, true时,标题栏浸入状态栏 = false
-    private var titleBarColor: Int = Color.WHITE// 标题栏背景颜色 = 0
-    private var titleBarHeight: Int = 0 // 标题栏高度 = 0
-    private var statusBarColor: Int = Color.WHITE // 状态栏颜色 = 0
-    private var statusBarMode: Int = 0 // 状态栏模式 = 0
-    private var showBottomLine: Boolean = true // 是否显示底部分割线 = false
-    private var bottomLineColor: Int = 0// 分割线颜色 = 0
-    private var bottomShadowHeight: Float = 0f // 底部阴影高度 = 0f
-    private var leftType =
-        TYPE_LEFT_NONE// 左边视图类型 = 0
-    private var leftText // 左边TextView文字
-            : String? = null
+    var titleBarColor: Int = Color.WHITE // 标题栏背景颜色 = 0
+        set(value) {
+            field = value
+            rlMain?.setBackgroundColor(value)
+        }
+    var titleBarHeight: Int = 0 // 标题栏高度 = 0
+        set(value) {
+            field = value
+            rlMain?.layoutParams?.height = if (showBottomLine) {
+                titleBarHeight - max(1, context.dp2px(0.4f))
+            } else {
+                titleBarHeight
+            }
+        }
+    var statusBarColor: Int = Color.WHITE // 状态栏颜色 = 0
+        set(value) {
+            field = value
+            viewStatusBarFill?.setBackgroundColor(value)
+        }
+    var statusBarMode: Int = 0 // 状态栏模式 = 0
+        set(value) {
+            field = value
+            val window = window ?: return
+            if (value == 0) {
+                StatusBarUtil.setDarkMode(window)
+            } else {
+                StatusBarUtil.setLightMode(window)
+            }
+        }
+    var showBottomLine: Boolean = true // 是否显示底部分割线 = false
+        set(value) {
+            field = value
+            bottomLine?.isVisible = value
+        }
+    var bottomLineColor: Int = 0 // 分割线颜色 = 0
+        set(value) {
+            field = value
+            bottomLine?.setBackgroundColor(value)
+        }
+    var bottomShadowHeight: Float = 0f // 底部阴影高度 = 0f
+        set(value) {
+            field = value
+            if (value > 0f) {
+                viewBottomShadow?.layoutParams?.height = value.toInt()
+            }
+        }
+    var leftType = TYPE_LEFT_NONE
+        // 左边视图类型 = 0
+        set(value) {
+            field = value
+            initMainLeftViews(context)
+        }
+    private var leftText: String? = null // 左边TextView文字
     private var leftTextColor = NO_ID// 左边TextView颜色 = NO_ID
     private var leftTextSize = 0f// 左边TextView文字大小 = 0f
     private var leftTextFontFamily = 0// 左边TextView文字字体 = 0
@@ -155,28 +182,31 @@ class CommonTitleBar @JvmOverloads constructor(
     private var leftImageResource = R.drawable.common_titlebar_reback_selector // 左边图片资源 = 0
     private var leftImageTint = Color.BLACK
     private var leftCustomViewRes = 0// 左边自定义视图布局资源 = 0
-    private var rightType =
-        TYPE_RIGHT_NONE // 右边视图类型 = 0
-    private var rightText // 右边TextView文字
-            : String? = null
+    var rightType = TYPE_RIGHT_NONE // 右边视图类型 = 0
+        set(value) {
+            field = value
+            initMainRightViews(context)
+        }
+    private var rightText: String? = null // 右边TextView文字
     private var rightTextColor = NO_ID// 右边TextView颜色 = NO_ID
     private var rightTextSize = 0f// 右边TextView文字大小 = 0f
     private var rightTextFontFamily = 0// 右边TextView文字字体 = 0
     private var rightTextBold = false// 右边TextView文字是否加粗 = false
     private var rightImageResource = 0// 右边图片资源 = 0
     private var rightImageTint = Color.BLACK
-    private var rightCustomViewRes = 0// 右边自定义视图布局资源 = 0
-    private var centerType =
-        TYPE_CENTER_NONE // 中间视图类型 = 0
-    private var centerText // 中间TextView文字
-            : String? = null
+    private var rightCustomViewRes = 0 // 右边自定义视图布局资源 = 0
+    var centerType = TYPE_CENTER_NONE // 中间视图类型 = 0
+        set(value) {
+            field = value
+            initMainCenterViews(context)
+        }
+    private var centerText: String? = null // 中间TextView文字
     private var centerTextColor = Color.parseColor("#333333")// 中间TextView字体颜色 = 0
-    private var centerTextSize = 0f// 中间TextView字体大小 = 0f
+    private var centerTextSize = 0f // 中间TextView字体大小 = 0f
     private var centerTextFontFamily = 0// 中间TextView文字字体 = 0
     private var centerTextBold = true// 中间TextView文字是否加粗 = true
     private var centerTextMarquee = true// 中间TextView字体是否显示跑马灯效果 = false
-    private var centerSubText // 中间subTextView文字
-            : String? = null
+    private var centerSubText: String? = null // 中间subTextView文字
     private var centerSubTextColor = Color.parseColor("#666666")// 中间subTextView字体颜色 = 0
     private var centerSubTextSize = 0f// 中间subTextView字体大小 = 0f
     private var centerSubTextFontFamily = 0// 中间subTextView文字字体 = 0
@@ -210,8 +240,7 @@ class CommonTitleBar @JvmOverloads constructor(
             // notice 未引入沉浸式标题栏之前,隐藏标题栏撑起布局
             fillStatusBar = array.getBoolean(R.styleable.CommonTitleBar_fillStatusBar, true)
         }
-        titleBarColor =
-            array.getColor(R.styleable.CommonTitleBar_titleBarColor, Color.WHITE)
+        titleBarColor = array.getColor(R.styleable.CommonTitleBar_titleBarColor, Color.WHITE)
         titleBarHeight = array.getDimension(
             R.styleable.CommonTitleBar_titleBarHeight,
             context.dpToPx(44f)
@@ -412,9 +441,6 @@ class CommonTitleBar @JvmOverloads constructor(
         array.recycle()
     }
 
-    private val MATCH_PARENT = ViewGroup.LayoutParams.MATCH_PARENT
-    private val WRAP_CONTENT = ViewGroup.LayoutParams.WRAP_CONTENT
-
     /**
      * 初始化全局视图
      *
@@ -445,50 +471,34 @@ class CommonTitleBar @JvmOverloads constructor(
             mainParams.addRule(ALIGN_PARENT_TOP)
         }
         // 计算主布局高度
-        when {
-            showBottomLine -> {
-                mainParams.height = titleBarHeight - max(1, context.dp2px(0.4f))
-            }
-            else -> {
-                mainParams.height = titleBarHeight
-            }
+        mainParams.height = if (showBottomLine) {
+            titleBarHeight - max(1, context.dp2px(0.4f))
+        } else {
+            titleBarHeight
         }
         addView(rlMain, mainParams)
         // 构建分割线视图
-        when {
-            showBottomLine -> {
-                // 已设置显示标题栏分隔线,5.0以下机型,显示分隔线
-                bottomLine = View(context)
-                bottomLine!!.setBackgroundColor(bottomLineColor)
-                val bottomLineParams = LayoutParams(
-                    MATCH_PARENT,
-                    max(1, context.dp2px(0.4f))
-                )
-                bottomLineParams.addRule(BELOW, rlMain!!.id)
-                addView(bottomLine, bottomLineParams)
-            }
-            bottomShadowHeight != 0f -> {
-                viewBottomShadow = View(context)
-                viewBottomShadow!!.setBackgroundResource(R.drawable.common_titlebar_bottom_shadow)
-                val bottomShadowParams = LayoutParams(
-                    MATCH_PARENT,
-                    context.dp2px(bottomShadowHeight)
-                )
-                bottomShadowParams.addRule(BELOW, rlMain!!.id)
-                addView(viewBottomShadow, bottomShadowParams)
-            }
+        if (showBottomLine) {
+            // 已设置显示标题栏分隔线,5.0以下机型,显示分隔线
+            bottomLine = View(context)
+            bottomLine!!.setBackgroundColor(bottomLineColor)
+            val bottomLineParams = LayoutParams(
+                MATCH_PARENT,
+                max(1, context.dp2px(0.4f))
+            )
+            bottomLineParams.addRule(BELOW, rlMain!!.id)
+            addView(bottomLine, bottomLineParams)
         }
-    }
-
-    /**
-     * 初始化主视图
-     *
-     * @param context 上下文
-     */
-    private fun initMainViews(context: Context) {
-        initMainLeftViews(context)
-        initMainRightViews(context)
-        initMainCenterViews(context)
+        if (bottomShadowHeight >= 0f) {
+            viewBottomShadow = View(context)
+            viewBottomShadow!!.setBackgroundResource(R.drawable.common_titlebar_bottom_shadow)
+            val bottomShadowParams = LayoutParams(
+                MATCH_PARENT,
+                context.dp2px(bottomShadowHeight)
+            )
+            bottomShadowParams.addRule(BELOW, rlMain!!.id)
+            addView(viewBottomShadow, bottomShadowParams)
+        }
     }
 
     /**
@@ -1033,15 +1043,6 @@ class CommonTitleBar @JvmOverloads constructor(
     }
 
     /**
-     * 设置状态栏颜色
-     *
-     * @param color
-     */
-    fun setStatusBarColor(color: Int) {
-        viewStatusBarFill?.setBackgroundColor(color)
-    }
-
-    /**
      * 是否填充状态栏
      *
      * @param show
@@ -1255,20 +1256,22 @@ class CommonTitleBar @JvmOverloads constructor(
     }
 
     companion object {
-        private const val TYPE_LEFT_NONE = 0
-        private const val TYPE_LEFT_TEXT_VIEW = 1
-        private const val TYPE_LEFT_IMAGE_BUTTON = 2
-        private const val TYPE_LEFT_CUSTOM_VIEW = 3
-        private const val TYPE_RIGHT_NONE = 0
-        private const val TYPE_RIGHT_TEXT_VIEW = 1
-        private const val TYPE_RIGHT_IMAGE_BUTTON = 2
-        private const val TYPE_RIGHT_CUSTOM_VIEW = 3
-        private const val TYPE_CENTER_NONE = 0
-        private const val TYPE_CENTER_TEXT_VIEW = 1
-        private const val TYPE_CENTER_SEARCH_VIEW = 2
-        private const val TYPE_CENTER_CUSTOM_VIEW = 3
-        private const val TYPE_CENTER_SEARCH_RIGHT_VOICE = 0
-        private const val TYPE_CENTER_SEARCH_RIGHT_DELETE = 1
+        private const val MATCH_PARENT = ViewGroup.LayoutParams.MATCH_PARENT
+        private const val WRAP_CONTENT = ViewGroup.LayoutParams.WRAP_CONTENT
+        const val TYPE_LEFT_NONE = 0
+        const val TYPE_LEFT_TEXT_VIEW = 1
+        const val TYPE_LEFT_IMAGE_BUTTON = 2
+        const val TYPE_LEFT_CUSTOM_VIEW = 3
+        const val TYPE_RIGHT_NONE = 0
+        const val TYPE_RIGHT_TEXT_VIEW = 1
+        const val TYPE_RIGHT_IMAGE_BUTTON = 2
+        const val TYPE_RIGHT_CUSTOM_VIEW = 3
+        const val TYPE_CENTER_NONE = 0
+        const val TYPE_CENTER_TEXT_VIEW = 1
+        const val TYPE_CENTER_SEARCH_VIEW = 2
+        const val TYPE_CENTER_CUSTOM_VIEW = 3
+        const val TYPE_CENTER_SEARCH_RIGHT_VOICE = 0
+        const val TYPE_CENTER_SEARCH_RIGHT_DELETE = 1
     }
 
     init {
@@ -1276,6 +1279,5 @@ class CommonTitleBar @JvmOverloads constructor(
         PADDING_16 = context.dp2px(16f)
         loadAttributes(context, attrs)
         initGlobalViews(context)
-        initMainViews(context)
     }
 }

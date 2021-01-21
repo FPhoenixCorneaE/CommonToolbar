@@ -1,6 +1,6 @@
 class Config {
-    static gradle_version = '3.2.0'
-    static kotlin_version = '1.3.50'
+    static gradle_version = '4.1.1'
+    static kotlin_version = '1.4.0'
     static navigation_version = '2.3.0'
     static android_maven_gradle_plugin = '2.1'
 
@@ -12,7 +12,8 @@ class Config {
 
     /* 组件 */
     static FPhoenixCorneaE = [
-            CommonUtil            : "com.github.FPhoenixCorneaE:CommonUtil:1.0.1",
+            CommonUtil    : "com.github.FPhoenixCorneaE:CommonUtil:1.0.1",
+            CommonTitlebar: 'com.github.FPhoenixCorneaE:CommonTitlebar:1.0.2',
     ]
 
     /** Android */
@@ -21,14 +22,14 @@ class Config {
             buildToolsVersion: "30.0.1",
             minSdkVersion    : 21,
             targetSdkVersion : 30,
-            versionCode      : 102,
-            versionName      : "1.0.2"
+            versionCode      : 103,
+            versionName      : "1.0.3"
     ]
 
     /** Supports */
     static support = [
-            appcompat          : "androidx.appcompat:appcompat:1.2.0",
-            constraintLayout   : "androidx.constraintlayout:constraintlayout:2.0.2",
+            appcompat       : "androidx.appcompat:appcompat:1.2.0",
+            constraintLayout: "androidx.constraintlayout:constraintlayout:2.0.2",
     ]
 
     /** navigation 扩展插件 */
