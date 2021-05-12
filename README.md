@@ -17,6 +17,8 @@ allprojects {
 **Step 2.** Add the dependency
 ```groovy
 dependencies {
-	implementation 'com.github.FPhoenixCorneaE:CommonTitlebar:1.0.5'
+	implementation("com.github.FPhoenixCorneaE:CommonTitlebar:1.0.5")
+	implementation("com.github.FPhoenixCorneaE:CommonUtil:1.0.9")
+    implementation("com.orhanobut:logger:2.2.0")
 }
 ```
