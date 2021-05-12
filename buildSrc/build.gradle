@@ -4,7 +4,7 @@ apply {
 }
 repositories {
     google()
-    jcenter()
+    mavenCentral()
 }
 dependencies {
     implementation gradleApi()

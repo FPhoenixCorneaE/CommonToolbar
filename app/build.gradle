@@ -3,15 +3,15 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion Config.android.compileSdkVersion
-    buildToolsVersion Config.android.buildToolsVersion
+    compileSdkVersion Deps.android.compileSdkVersion
+    buildToolsVersion Deps.android.buildToolsVersion
 
     defaultConfig {
         applicationId "com.fphoenixcorneae.titlebar.demo"
-        minSdkVersion Config.android.minSdkVersion
-        targetSdkVersion Config.android.targetSdkVersion
-        versionCode Config.android.versionCode
-        versionName Config.android.versionName
+        minSdkVersion Deps.android.minSdkVersion
+        targetSdkVersion Deps.android.targetSdkVersion
+        versionCode Deps.android.versionCode
+        versionName Deps.android.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,7 +29,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     dexOptions {
@@ -43,13 +43,15 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation Config.support.appcompat
-    implementation Config.support.constraintLayout
-    implementation Config.kotlin.core
-    implementation Config.kotlin.kotlinStdlibJdk7
+    implementation Deps.androidX.appcompat
+    implementation Deps.androidX.constraintLayout
+    implementation Deps.kotlin.coreKtx
+    implementation Deps.kotlin.stdlib
 //    implementation Config.FPhoenixCorneaE.CommonTitlebar
-    implementation project(path: ':common-titlebar')
-    testImplementation 'junit:junit:4.13'
+    implementation project(path: ':commonTitlebar')
+    implementation(Deps.FPhoenixCorneaE.CommonUtil)
+    implementation(Deps.logger)
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 

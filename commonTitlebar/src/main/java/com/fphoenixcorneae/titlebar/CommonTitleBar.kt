@@ -1275,8 +1275,8 @@ class CommonTitleBar @JvmOverloads constructor(
     }
 
     init {
-        PADDING_5 = context.dp2px(5f)
-        PADDING_16 = context.dp2px(16f)
+        PADDING_5 = dp2px(5f)
+        PADDING_16 = dp2px(16f)
         loadAttributes(context, attrs)
         initGlobalViews(context)
     }

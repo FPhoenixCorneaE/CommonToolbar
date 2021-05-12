@@ -1,18 +1,17 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.github.dcendents.android-maven'
-group = 'com.github.FPhoenixCorneaE'
+group = "com.github.FPhoenixCorneaE"
 
 android {
-    compileSdkVersion Config.android.compileSdkVersion
-    buildToolsVersion Config.android.buildToolsVersion
+    compileSdkVersion Deps.android.compileSdkVersion
+    buildToolsVersion Deps.android.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion Config.android.minSdkVersion
-        targetSdkVersion Config.android.targetSdkVersion
-        versionCode Config.android.versionCode
-        versionName Config.android.versionName
+        minSdkVersion Deps.android.minSdkVersion
+        targetSdkVersion Deps.android.targetSdkVersion
+        versionCode Deps.android.versionCode
+        versionName Deps.android.versionName
 
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -48,7 +47,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     dexOptions {
@@ -61,11 +60,11 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation Config.FPhoenixCorneaE.CommonUtil
-    implementation Config.support.appcompat
-    implementation Config.kotlin.core
-    implementation Config.kotlin.kotlinStdlibJdk7
+    compileOnly(fileTree(dir: 'libs', include: ['*.jar']))
+    compileOnly(Deps.kotlin.stdlib)
+    compileOnly(Deps.kotlin.coreKtx)
+    compileOnly(Deps.androidX.appcompat)
+    compileOnly(Deps.FPhoenixCorneaE.CommonUtil)
 }
 
 //添加以下配置，否则上传后的jar包看不到注释-------------------------------------------------------------
