@@ -12,8 +12,8 @@ class Deps {
 
     /* 组件 */
     static FPhoenixCorneaE = [
-            CommonUtil    : "com.github.FPhoenixCorneaE:CommonUtil:1.0.9",
-            CommonTitlebar: 'com.github.FPhoenixCorneaE:CommonTitlebar:1.0.5',
+            CommonUtil    : "com.github.FPhoenixCorneaE:CommonUtil:1.1.1",
+            CommonToolbar: 'com.github.FPhoenixCorneaE:CommonToolbar:1.0.6',
     ]
 
     /** Android */
@@ -22,8 +22,8 @@ class Deps {
             buildToolsVersion: "30.0.3",
             minSdkVersion    : 21,
             targetSdkVersion : 30,
-            versionCode      : 105,
-            versionName      : "1.0.5"
+            versionCode      : 106,
+            versionName      : "1.0.6"
     ]
 
     /** androidX */
@@ -54,24 +54,7 @@ class Deps {
             android: "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3"
     ]
 
-    /** RxJava2 */
-    static rxJava2 = [
-            rxJava   : "io.reactivex.rxjava2:rxjava:2.2.0",
-            rxAndroid: "io.reactivex.rxjava2:rxandroid:2.1.0",
-            rxKotlin : "io.reactivex.rxjava2:rxkotlin:2.2.0",
-    ]
-
-    /** logger */
-    static logger = "com.orhanobut:logger:2.2.0"
-    /** 权限管理 */
-    static rxPermissions = 'com.github.tbruyelle:rxpermissions:0.10.2'
-    /** Gson */
-    static gson = 'com.google.code.gson:gson:2.8.5'
-    /** Kotlin Coroutines Image Loader */
-    static coil = 'io.coil-kt:coil:0.13.0'
-
     static androidXLibs = androidX.values()
     static navigationLibs = navigation.values()
     static kotlinLibs = kotlin.values()
-    static rxJava2Libs = rxJava2.values()
 }

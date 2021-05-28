@@ -7,7 +7,7 @@ android {
     buildToolsVersion Deps.android.buildToolsVersion
 
     defaultConfig {
-        applicationId "com.fphoenixcorneae.titlebar.demo"
+        applicationId "com.fphoenixcorneae.toolbar.demo"
         minSdkVersion Deps.android.minSdkVersion
         targetSdkVersion Deps.android.targetSdkVersion
         versionCode Deps.android.versionCode
@@ -47,10 +47,9 @@ dependencies {
     implementation Deps.androidX.constraintLayout
     implementation Deps.kotlin.coreKtx
     implementation Deps.kotlin.stdlib
-//    implementation Config.FPhoenixCorneaE.CommonTitlebar
-    implementation project(path: ':commonTitlebar')
+//    implementation Config.FPhoenixCorneaE.CommonToolbar
+    implementation project(path: ':commonToolbar')
     implementation(Deps.FPhoenixCorneaE.CommonUtil)
-    implementation(Deps.logger)
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

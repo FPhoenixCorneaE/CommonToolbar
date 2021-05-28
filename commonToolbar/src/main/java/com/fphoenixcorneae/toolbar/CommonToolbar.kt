@@ -1,4 +1,4 @@
-package com.fphoenixcorneae.titlebar
+package com.fphoenixcorneae.toolbar
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -29,11 +29,11 @@ import kotlin.math.max
 /**
  * @desc 通用标题栏
  */
-class CommonTitleBar @JvmOverloads constructor(
+class CommonToolbar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
+    defStyleRes: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes), View.OnClickListener {
     private var viewStatusBarFill: View? = null // 状态栏填充视图
 
@@ -120,18 +120,18 @@ class CommonTitleBar @JvmOverloads constructor(
     var centerCustomView: View? = null // 中间自定义视图
         private set
     private var fillStatusBar: Boolean = true // 是否撑起状态栏, true时,标题栏浸入状态栏 = false
-    var titleBarColor: Int = Color.WHITE // 标题栏背景颜色 = 0
+    var toolbarColor: Int = Color.WHITE // 标题栏背景颜色 = 0
         set(value) {
             field = value
             rlMain?.setBackgroundColor(value)
         }
-    var titleBarHeight: Int = 0 // 标题栏高度 = 0
+    var toolbarHeight: Int = 0 // 标题栏高度 = 0
         set(value) {
             field = value
             rlMain?.layoutParams?.height = if (showBottomLine) {
-                titleBarHeight - max(1, context.dp2px(0.4f))
+                toolbarHeight - max(1, context.dp2px(0.4f))
             } else {
-                titleBarHeight
+                toolbarHeight
             }
         }
     var statusBarColor: Int = Color.WHITE // 状态栏颜色 = 0
@@ -139,7 +139,7 @@ class CommonTitleBar @JvmOverloads constructor(
             field = value
             viewStatusBarFill?.setBackgroundColor(value)
         }
-    var statusBarMode: Int = 0 // 状态栏模式 = 0
+    var statusBarMode: Int = 0 // 状态栏图片模式：0-暗色 非0-亮色
         set(value) {
             field = value
             val window = window ?: return
@@ -173,26 +173,26 @@ class CommonTitleBar @JvmOverloads constructor(
             initMainLeftViews(context)
         }
     private var leftText: String? = null // 左边TextView文字
-    private var leftTextColor = NO_ID// 左边TextView颜色 = NO_ID
-    private var leftTextSize = 0f// 左边TextView文字大小 = 0f
-    private var leftTextFontFamily = 0// 左边TextView文字字体 = 0
-    private var leftTextBold = false// 左边TextView文字是否加粗 = false
-    private var leftDrawable = 0// 左边TextView drawableLeft资源 = 0
+    private var leftTextColor = NO_ID // 左边TextView颜色 = NO_ID
+    private var leftTextSize = 0f // 左边TextView文字大小 = 0f
+    private var leftTextFontFamily = 0 // 左边TextView文字字体 = 0
+    private var leftTextBold = false // 左边TextView文字是否加粗 = false
+    private var leftDrawable = 0 // 左边TextView drawableLeft资源 = 0
     private var leftDrawablePadding = 5f // 左边TextView drawablePadding = 0f
-    private var leftImageResource = R.drawable.common_titlebar_reback_selector // 左边图片资源 = 0
+    private var leftImageResource = R.drawable.common_toolbar_reback_selector // 左边图片资源 = 0
     private var leftImageTint = Color.BLACK
-    private var leftCustomViewRes = 0// 左边自定义视图布局资源 = 0
+    private var leftCustomViewRes = 0 // 左边自定义视图布局资源 = 0
     var rightType = TYPE_RIGHT_NONE // 右边视图类型 = 0
         set(value) {
             field = value
             initMainRightViews(context)
         }
     private var rightText: String? = null // 右边TextView文字
-    private var rightTextColor = NO_ID// 右边TextView颜色 = NO_ID
-    private var rightTextSize = 0f// 右边TextView文字大小 = 0f
-    private var rightTextFontFamily = 0// 右边TextView文字字体 = 0
-    private var rightTextBold = false// 右边TextView文字是否加粗 = false
-    private var rightImageResource = 0// 右边图片资源 = 0
+    private var rightTextColor = NO_ID // 右边TextView颜色 = NO_ID
+    private var rightTextSize = 0f // 右边TextView文字大小 = 0f
+    private var rightTextFontFamily = 0 // 右边TextView文字字体 = 0
+    private var rightTextBold = false // 右边TextView文字是否加粗 = false
+    private var rightImageResource = 0 // 右边图片资源 = 0
     private var rightImageTint = Color.BLACK
     private var rightCustomViewRes = 0 // 右边自定义视图布局资源 = 0
     var centerType = TYPE_CENTER_NONE // 中间视图类型 = 0
@@ -201,148 +201,155 @@ class CommonTitleBar @JvmOverloads constructor(
             initMainCenterViews(context)
         }
     private var centerText: String? = null // 中间TextView文字
-    private var centerTextColor = Color.parseColor("#333333")// 中间TextView字体颜色 = 0
+    private var centerTextColor = Color.parseColor("#333333") // 中间TextView字体颜色 = 0
     private var centerTextSize = 0f // 中间TextView字体大小 = 0f
-    private var centerTextFontFamily = 0// 中间TextView文字字体 = 0
-    private var centerTextBold = true// 中间TextView文字是否加粗 = true
-    private var centerTextMarquee = true// 中间TextView字体是否显示跑马灯效果 = false
+    private var centerTextFontFamily = 0 // 中间TextView文字字体 = 0
+    private var centerTextBold = true // 中间TextView文字是否加粗 = true
+    private var centerTextMarquee = true // 中间TextView字体是否显示跑马灯效果 = false
     private var centerSubText: String? = null // 中间subTextView文字
-    private var centerSubTextColor = Color.parseColor("#666666")// 中间subTextView字体颜色 = 0
-    private var centerSubTextSize = 0f// 中间subTextView字体大小 = 0f
-    private var centerSubTextFontFamily = 0// 中间subTextView文字字体 = 0
-    private var centerSubTextBold = false// 中间subTextView文字是否加粗 = true
+    private var centerSubTextColor = Color.parseColor("#666666") // 中间subTextView字体颜色 = 0
+    private var centerSubTextSize = 0f // 中间subTextView字体大小 = 0f
+    private var centerSubTextFontFamily = 0 // 中间subTextView文字字体 = 0
+    private var centerSubTextBold = false // 中间subTextView文字是否加粗 = true
 
     /**
      * 搜索输入框:是否可输入、提示文字、提示文字颜色、文字颜色、文字大小、背景图片、
      *           右边按钮类型  0: voice 1: delete = 0
      */
     private var centerSearchEditable = true
-    private var centerSearchHintText: String? = resources.getString(R.string.titlebar_search_hint)
+    private var centerSearchHintText: String? = resources.getString(R.string.toolbar_search_hint)
     private var centerSearchHintTextColor = Color.parseColor("#999999")
     private var centerSearchTextColor = Color.parseColor("#666666")
     private var centerSearchTextSize = 0f
     private var centerSearchIconTint = Color.WHITE
-    private var centerSearchBgResource = R.drawable.common_titlebar_search_gray_shape
+    private var centerSearchBgResource = R.drawable.common_toolbar_search_gray_shape
     private var centerSearchRightType = TYPE_CENTER_SEARCH_RIGHT_VOICE
-    private var centerCustomViewRes = 0// 中间自定义布局资源 = 0
-    private var PADDING_5 = 0
-    private var PADDING_16 = 0
-    private var onTitleBarClickListener: OnTitleBarClickListener? = null
-    private var onTitleBarDoubleClickListener: OnTitleBarDoubleClickListener? = null
+    private var centerCustomViewRes = 0 // 中间自定义布局资源 = 0
+    private var PADDING_5 = dp2px(5f)
+    private var PADDING_16 = dp2px(16f)
+
+    /**
+     * 点击事件
+     * @param v
+     * @param action [MotionAction], 如ACTION_LEFT_TEXT
+     * @param extra  中间为搜索框时,如果可输入,点击键盘的搜索按钮,会返回输入关键词
+     */
+    var onToolbarClickListener: ((v: View, action: Int, extra: String?, ) -> Unit)? = null
+    var onToolbarDoubleClickListener: OnToolbarDoubleClickListener? = null
 
     @SuppressLint("ObsoleteSdkInt")
     private fun loadAttributes(
         context: Context,
-        attrs: AttributeSet?
+        attrs: AttributeSet?,
     ) {
-        val array = context.obtainStyledAttributes(attrs, R.styleable.CommonTitleBar)
+        val array = context.obtainStyledAttributes(attrs, R.styleable.CommonToolbar)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             // notice 未引入沉浸式标题栏之前,隐藏标题栏撑起布局
-            fillStatusBar = array.getBoolean(R.styleable.CommonTitleBar_fillStatusBar, true)
+            fillStatusBar = array.getBoolean(R.styleable.CommonToolbar_fillStatusBar, true)
         }
-        titleBarColor = array.getColor(R.styleable.CommonTitleBar_titleBarColor, Color.WHITE)
-        titleBarHeight = array.getDimension(
-            R.styleable.CommonTitleBar_titleBarHeight,
+        toolbarColor = array.getColor(R.styleable.CommonToolbar_toolbarColor, Color.WHITE)
+        toolbarHeight = array.getDimension(
+            R.styleable.CommonToolbar_toolbarHeight,
             context.dpToPx(44f)
         ).toInt()
         statusBarColor =
-            array.getColor(R.styleable.CommonTitleBar_statusBarColor, Color.WHITE)
-        statusBarMode = array.getInt(R.styleable.CommonTitleBar_statusBarMode, 0)
-        showBottomLine = array.getBoolean(R.styleable.CommonTitleBar_showBottomLine, true)
+            array.getColor(R.styleable.CommonToolbar_statusBarColor, Color.WHITE)
+        statusBarMode = array.getInt(R.styleable.CommonToolbar_statusBarMode, 0)
+        showBottomLine = array.getBoolean(R.styleable.CommonToolbar_showBottomLine, true)
         bottomLineColor = array.getColor(
-            R.styleable.CommonTitleBar_bottomLineColor,
+            R.styleable.CommonToolbar_bottomLineColor,
             Color.parseColor("#eeeeee")
         )
         bottomShadowHeight = array.getDimension(
-            R.styleable.CommonTitleBar_bottomShadowHeight,
+            R.styleable.CommonToolbar_bottomShadowHeight,
             0f
         )
         leftType = array.getInt(
-            R.styleable.CommonTitleBar_leftType,
+            R.styleable.CommonToolbar_leftType,
             TYPE_LEFT_NONE
         )
         when (leftType) {
             TYPE_LEFT_TEXT_VIEW -> {
-                leftText = array.getString(R.styleable.CommonTitleBar_leftText)
+                leftText = array.getString(R.styleable.CommonToolbar_leftText)
                 leftTextColor = array.getColor(
-                    R.styleable.CommonTitleBar_leftTextColor,
+                    R.styleable.CommonToolbar_leftTextColor,
                     NO_ID
                 )
                 leftTextSize = array.getDimension(
-                    R.styleable.CommonTitleBar_leftTextSize,
+                    R.styleable.CommonToolbar_leftTextSize,
                     context.spToPx(16f)
                 )
                 leftTextFontFamily = array.getResourceId(
-                    R.styleable.CommonTitleBar_leftTextFontFamily,
+                    R.styleable.CommonToolbar_leftTextFontFamily,
                     0
                 )
                 leftTextBold = array.getBoolean(
-                    R.styleable.CommonTitleBar_leftTextBold,
+                    R.styleable.CommonToolbar_leftTextBold,
                     false
                 )
-                leftDrawable = array.getResourceId(R.styleable.CommonTitleBar_leftDrawable, 0)
+                leftDrawable = array.getResourceId(R.styleable.CommonToolbar_leftDrawable, 0)
                 leftDrawablePadding =
-                    array.getDimension(R.styleable.CommonTitleBar_leftDrawablePadding, 5f)
+                    array.getDimension(R.styleable.CommonToolbar_leftDrawablePadding, 5f)
             }
             TYPE_LEFT_IMAGE_BUTTON -> {
                 leftImageResource = array.getResourceId(
-                    R.styleable.CommonTitleBar_leftImageResource,
-                    R.drawable.common_titlebar_reback_selector
+                    R.styleable.CommonToolbar_leftImageResource,
+                    R.drawable.common_toolbar_reback_selector
                 )
                 leftImageTint = array.getColor(
-                    R.styleable.CommonTitleBar_leftImageTint,
+                    R.styleable.CommonToolbar_leftImageTint,
                     Color.BLACK
                 )
             }
             TYPE_LEFT_CUSTOM_VIEW -> {
                 leftCustomViewRes =
-                    array.getResourceId(R.styleable.CommonTitleBar_leftCustomView, 0)
+                    array.getResourceId(R.styleable.CommonToolbar_leftCustomView, 0)
             }
         }
         rightType = array.getInt(
-            R.styleable.CommonTitleBar_rightType,
+            R.styleable.CommonToolbar_rightType,
             TYPE_RIGHT_NONE
         )
         when (rightType) {
             TYPE_RIGHT_TEXT_VIEW -> {
-                rightText = array.getString(R.styleable.CommonTitleBar_rightText)
+                rightText = array.getString(R.styleable.CommonToolbar_rightText)
                 rightTextColor = array.getColor(
-                    R.styleable.CommonTitleBar_rightTextColor,
+                    R.styleable.CommonToolbar_rightTextColor,
                     NO_ID
                 )
                 rightTextSize = array.getDimension(
-                    R.styleable.CommonTitleBar_rightTextSize,
+                    R.styleable.CommonToolbar_rightTextSize,
                     context.spToPx(16f)
                 )
                 rightTextFontFamily = array.getResourceId(
-                    R.styleable.CommonTitleBar_rightTextFontFamily,
+                    R.styleable.CommonToolbar_rightTextFontFamily,
                     0
                 )
                 rightTextBold = array.getBoolean(
-                    R.styleable.CommonTitleBar_rightTextBold,
+                    R.styleable.CommonToolbar_rightTextBold,
                     false
                 )
             }
             TYPE_RIGHT_IMAGE_BUTTON -> {
                 rightImageResource =
-                    array.getResourceId(R.styleable.CommonTitleBar_rightImageResource, 0)
+                    array.getResourceId(R.styleable.CommonToolbar_rightImageResource, 0)
                 rightImageTint = array.getColor(
-                    R.styleable.CommonTitleBar_rightImageTint,
+                    R.styleable.CommonToolbar_rightImageTint,
                     Color.BLACK
                 )
             }
             TYPE_RIGHT_CUSTOM_VIEW -> {
                 rightCustomViewRes =
-                    array.getResourceId(R.styleable.CommonTitleBar_rightCustomView, 0)
+                    array.getResourceId(R.styleable.CommonToolbar_rightCustomView, 0)
             }
         }
         centerType = array.getInt(
-            R.styleable.CommonTitleBar_centerType,
+            R.styleable.CommonToolbar_centerType,
             TYPE_CENTER_NONE
         )
         when (centerType) {
             TYPE_CENTER_TEXT_VIEW -> {
-                centerText = array.getString(R.styleable.CommonTitleBar_centerText)
+                centerText = array.getString(R.styleable.CommonToolbar_centerText)
                 // 如果当前上下文对象是Activity，就获取Activity的标题
                 if (centerText.isNullOrBlank() && getContext() is Activity) {
                     // 获取清单文件中的 android:label 属性值
@@ -365,77 +372,77 @@ class CommonTitleBar @JvmOverloads constructor(
                     }
                 }
                 centerTextColor = array.getColor(
-                    R.styleable.CommonTitleBar_centerTextColor,
+                    R.styleable.CommonToolbar_centerTextColor,
                     Color.parseColor("#333333")
                 )
                 centerTextSize = array.getDimension(
-                    R.styleable.CommonTitleBar_centerTextSize,
+                    R.styleable.CommonToolbar_centerTextSize,
                     context.spToPx(18f)
                 )
                 centerTextFontFamily = array.getResourceId(
-                    R.styleable.CommonTitleBar_centerTextFontFamily,
+                    R.styleable.CommonToolbar_centerTextFontFamily,
                     0
                 )
                 centerTextBold = array.getBoolean(
-                    R.styleable.CommonTitleBar_centerTextBold,
+                    R.styleable.CommonToolbar_centerTextBold,
                     true
                 )
                 centerTextMarquee =
-                    array.getBoolean(R.styleable.CommonTitleBar_centerTextMarquee, true)
-                centerSubText = array.getString(R.styleable.CommonTitleBar_centerSubText)
+                    array.getBoolean(R.styleable.CommonToolbar_centerTextMarquee, true)
+                centerSubText = array.getString(R.styleable.CommonToolbar_centerSubText)
                 centerSubTextColor = array.getColor(
-                    R.styleable.CommonTitleBar_centerSubTextColor,
+                    R.styleable.CommonToolbar_centerSubTextColor,
                     Color.parseColor("#666666")
                 )
                 centerSubTextSize = array.getDimension(
-                    R.styleable.CommonTitleBar_centerSubTextSize,
+                    R.styleable.CommonToolbar_centerSubTextSize,
                     context.spToPx(11f)
                 )
                 centerSubTextFontFamily = array.getResourceId(
-                    R.styleable.CommonTitleBar_centerSubTextFontFamily,
+                    R.styleable.CommonToolbar_centerSubTextFontFamily,
                     0
                 )
                 centerSubTextBold = array.getBoolean(
-                    R.styleable.CommonTitleBar_centerSubTextBold,
+                    R.styleable.CommonToolbar_centerSubTextBold,
                     false
                 )
             }
             TYPE_CENTER_SEARCH_VIEW -> {
                 centerSearchEditable =
-                    array.getBoolean(R.styleable.CommonTitleBar_centerSearchEditable, true)
+                    array.getBoolean(R.styleable.CommonToolbar_centerSearchEditable, true)
                 centerSearchHintText =
-                    array.getString(R.styleable.CommonTitleBar_centerSearchHintText)
+                    array.getString(R.styleable.CommonToolbar_centerSearchHintText)
                 centerSearchHintTextColor =
                     array.getColor(
-                        R.styleable.CommonTitleBar_centerSearchHintTextColor,
+                        R.styleable.CommonToolbar_centerSearchHintTextColor,
                         Color.parseColor("#999999")
                     )
                 centerSearchTextColor =
                     array.getColor(
-                        R.styleable.CommonTitleBar_centerSearchTextColor,
+                        R.styleable.CommonToolbar_centerSearchTextColor,
                         Color.parseColor("#666666")
                     )
                 centerSearchTextSize =
                     array.getDimension(
-                        R.styleable.CommonTitleBar_centerSearchTextSize,
+                        R.styleable.CommonToolbar_centerSearchTextSize,
                         context.spToPx(14f)
                     )
                 centerSearchIconTint = array.getColor(
-                    R.styleable.CommonTitleBar_centerSearchIconTint,
+                    R.styleable.CommonToolbar_centerSearchIconTint,
                     Color.WHITE
                 )
                 centerSearchBgResource = array.getResourceId(
-                    R.styleable.CommonTitleBar_centerSearchBg,
-                    R.drawable.common_titlebar_search_gray_shape
+                    R.styleable.CommonToolbar_centerSearchBg,
+                    R.drawable.common_toolbar_search_gray_shape
                 )
                 centerSearchRightType = array.getInt(
-                    R.styleable.CommonTitleBar_centerSearchRightType,
+                    R.styleable.CommonToolbar_centerSearchRightType,
                     TYPE_CENTER_SEARCH_RIGHT_VOICE
                 )
             }
             TYPE_CENTER_CUSTOM_VIEW -> {
                 centerCustomViewRes =
-                    array.getResourceId(R.styleable.CommonTitleBar_centerCustomView, 0)
+                    array.getResourceId(R.styleable.CommonToolbar_centerCustomView, 0)
             }
         }
         array.recycle()
@@ -463,8 +470,8 @@ class CommonTitleBar @JvmOverloads constructor(
         // 构建主视图
         rlMain = RelativeLayout(context)
         rlMain!!.id = ViewUtil.generateViewId()
-        rlMain!!.setBackgroundColor(titleBarColor)
-        val mainParams = LayoutParams(MATCH_PARENT, titleBarHeight)
+        rlMain!!.setBackgroundColor(toolbarColor)
+        val mainParams = LayoutParams(MATCH_PARENT, toolbarHeight)
         if (fillStatusBar && transparentStatusBar) {
             mainParams.addRule(BELOW, viewStatusBarFill!!.id)
         } else {
@@ -472,9 +479,9 @@ class CommonTitleBar @JvmOverloads constructor(
         }
         // 计算主布局高度
         mainParams.height = if (showBottomLine) {
-            titleBarHeight - max(1, context.dp2px(0.4f))
+            toolbarHeight - max(1, context.dp2px(0.4f))
         } else {
-            titleBarHeight
+            toolbarHeight
         }
         addView(rlMain, mainParams)
         // 构建分割线视图
@@ -491,7 +498,7 @@ class CommonTitleBar @JvmOverloads constructor(
         }
         if (bottomShadowHeight >= 0f) {
             viewBottomShadow = View(context)
-            viewBottomShadow!!.setBackgroundResource(R.drawable.common_titlebar_bottom_shadow)
+            viewBottomShadow!!.setBackgroundResource(R.drawable.common_toolbar_bottom_shadow)
             val bottomShadowParams = LayoutParams(
                 MATCH_PARENT,
                 context.dp2px(bottomShadowHeight)
@@ -525,7 +532,7 @@ class CommonTitleBar @JvmOverloads constructor(
                         leftTextView!!.setTextColor(
                             ContextCompat.getColorStateList(
                                 context,
-                                R.color.common_titlebar_text_selector
+                                R.color.common_toolbar_text_selector
                             )
                         )
                     }
@@ -608,7 +615,7 @@ class CommonTitleBar @JvmOverloads constructor(
                         rightTextView!!.setTextColor(
                             ContextCompat.getColorStateList(
                                 context,
-                                R.color.common_titlebar_text_selector
+                                R.color.common_toolbar_text_selector
                             )
                         )
                     }
@@ -696,7 +703,7 @@ class CommonTitleBar @JvmOverloads constructor(
                 // 初始化进度条, 显示于标题栏左边
                 progressCenter = ProgressBar(context)
                 progressCenter!!.indeterminateDrawable =
-                    ContextCompat.getDrawable(context, R.drawable.common_titlebar_progress_draw)
+                    ContextCompat.getDrawable(context, R.drawable.common_toolbar_progress_draw)
                 progressCenter!!.visibility = View.GONE
                 val progressWidth = context.dp2px(18f)
                 val progressParams = LayoutParams(progressWidth, progressWidth)
@@ -778,7 +785,7 @@ class CommonTitleBar @JvmOverloads constructor(
                 searchParams.addRule(ALIGN_PARENT_START)
                 searchParams.marginStart = PADDING_16
                 centerSearchView!!.addView(centerSearchLeftImageView, searchParams)
-                centerSearchLeftImageView!!.setImageResource(R.drawable.common_titlebar_search_normal)
+                centerSearchLeftImageView!!.setImageResource(R.drawable.common_toolbar_search_normal)
                 centerSearchLeftImageView!!.setTintColor(centerSearchIconTint)
                 // 初始化搜索框语音ImageView
                 centerSearchRightImageView = ImageView(context)
@@ -790,10 +797,10 @@ class CommonTitleBar @JvmOverloads constructor(
                 voiceParams.marginEnd = PADDING_16
                 centerSearchView!!.addView(centerSearchRightImageView, voiceParams)
                 if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
-                    centerSearchRightImageView!!.setImageResource(R.drawable.common_titlebar_voice)
+                    centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_voice)
                     centerSearchRightImageView!!.setTintColor(centerSearchIconTint)
                 } else {
-                    centerSearchRightImageView!!.setImageResource(R.drawable.common_titlebar_delete_normal)
+                    centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_delete_normal)
                     centerSearchRightImageView!!.visibility = View.GONE
                 }
                 // 初始化文字输入框
@@ -852,11 +859,11 @@ class CommonTitleBar @JvmOverloads constructor(
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (!isInEditMode) {
-            setUpImmersionTitleBar()
+            setUpImmersionToolbar()
         }
     }
 
-    private fun setUpImmersionTitleBar() {
+    private fun setUpImmersionToolbar() {
         val window = window ?: return
         // 设置状态栏背景透明
         StatusBarUtil.transparentStatusBar(window)
@@ -886,7 +893,7 @@ class CommonTitleBar @JvmOverloads constructor(
             s: CharSequence,
             start: Int,
             count: Int,
-            after: Int
+            after: Int,
         ) {
         }
 
@@ -894,7 +901,7 @@ class CommonTitleBar @JvmOverloads constructor(
             s: CharSequence,
             start: Int,
             before: Int,
-            count: Int
+            count: Int,
         ) {
         }
 
@@ -903,10 +910,10 @@ class CommonTitleBar @JvmOverloads constructor(
                 TYPE_CENTER_SEARCH_RIGHT_VOICE -> {
                     when {
                         TextUtils.isEmpty(s) -> {
-                            centerSearchRightImageView!!.setImageResource(R.drawable.common_titlebar_voice)
+                            centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_voice)
                         }
                         else -> {
-                            centerSearchRightImageView!!.setImageResource(R.drawable.common_titlebar_delete_normal)
+                            centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_delete_normal)
                         }
                     }
                 }
@@ -937,7 +944,7 @@ class CommonTitleBar @JvmOverloads constructor(
     }
     private val editorActionListener = OnEditorActionListener { v, actionId, _ ->
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            onTitleBarClickListener?.onClicked(
+            onToolbarClickListener?.invoke(
                 v,
                 MotionAction.ACTION_SEARCH_SUBMIT,
                 centerSearchEditText!!.text.toString()
@@ -957,10 +964,10 @@ class CommonTitleBar @JvmOverloads constructor(
                 centerSearchEditText!!.setText("")
             }
         }
-        onTitleBarClickListener?.apply {
+        onToolbarClickListener?.apply {
             when (v) {
                 centerLayout -> {
-                    onTitleBarDoubleClickListener?.run {
+                    onToolbarDoubleClickListener?.run {
                         val currentClickMillis = System.currentTimeMillis()
                         if (currentClickMillis - lastClickMillis < 500) {
                             onDoubleClicked(v)
@@ -969,31 +976,31 @@ class CommonTitleBar @JvmOverloads constructor(
                     }
                 }
                 leftTextView -> {
-                    onClicked(
+                    invoke(
                         v,
                         MotionAction.ACTION_LEFT_TEXT, null
                     )
                 }
                 leftImageButton -> {
-                    onClicked(
+                    invoke(
                         v,
                         MotionAction.ACTION_LEFT_BUTTON, null
                     )
                 }
                 rightTextView -> {
-                    onClicked(
+                    invoke(
                         v,
                         MotionAction.ACTION_RIGHT_TEXT, null
                     )
                 }
                 rightImageButton -> {
-                    onClicked(
+                    invoke(
                         v,
                         MotionAction.ACTION_RIGHT_BUTTON, null
                     )
                 }
                 centerSearchEditText, centerSearchLeftImageView -> {
-                    onClicked(
+                    invoke(
                         v,
                         MotionAction.ACTION_SEARCH, null
                     )
@@ -1001,19 +1008,19 @@ class CommonTitleBar @JvmOverloads constructor(
                 centerSearchRightImageView -> {
                     centerSearchEditText!!.setText("")
                     if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) { // 语音按钮被点击
-                        onClicked(
+                        invoke(
                             v,
                             MotionAction.ACTION_SEARCH_VOICE, null
                         )
                     } else {
-                        onClicked(
+                        invoke(
                             v,
                             MotionAction.ACTION_SEARCH_DELETE, null
                         )
                     }
                 }
                 centerTextView -> {
-                    onClicked(
+                    invoke(
                         v,
                         MotionAction.ACTION_CENTER_TEXT, null
                     )
@@ -1160,22 +1167,6 @@ class CommonTitleBar @JvmOverloads constructor(
     val searchKey: String
         get() = centerSearchEditText?.text?.toString() ?: ""
 
-    /**
-     * 设置点击事件监听
-     *
-     * @param onTitleBarClickListener
-     */
-    fun setOnTitleBarClickListener(onTitleBarClickListener: OnTitleBarClickListener?) {
-        this.onTitleBarClickListener = onTitleBarClickListener
-    }
-
-    /**
-     * 设置双击监听
-     */
-    fun setOnTitleBarDoubleClickListener(onTitleBarDoubleClickListener: OnTitleBarDoubleClickListener?) {
-        this.onTitleBarDoubleClickListener = onTitleBarDoubleClickListener
-    }
-
     @Target(
         AnnotationTarget.FIELD,
         AnnotationTarget.ANNOTATION_CLASS,
@@ -1235,7 +1226,7 @@ class CommonTitleBar @JvmOverloads constructor(
     /**
      * 点击事件
      */
-    interface OnTitleBarClickListener {
+    interface OnToolbarClickListener {
         /**
          * @param v
          * @param action 对应ACTION_XXX, 如ACTION_LEFT_TEXT
@@ -1244,14 +1235,14 @@ class CommonTitleBar @JvmOverloads constructor(
         fun onClicked(
             v: View,
             @MotionAction action: Int,
-            extra: String?
+            extra: String?,
         )
     }
 
     /**
      * 标题栏双击事件监听
      */
-    interface OnTitleBarDoubleClickListener {
+    interface OnToolbarDoubleClickListener {
         fun onDoubleClicked(v: View)
     }
 
@@ -1275,8 +1266,6 @@ class CommonTitleBar @JvmOverloads constructor(
     }
 
     init {
-        PADDING_5 = dp2px(5f)
-        PADDING_16 = dp2px(16f)
         loadAttributes(context, attrs)
         initGlobalViews(context)
     }

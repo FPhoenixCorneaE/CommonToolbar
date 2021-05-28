@@ -64,7 +64,7 @@ dependencies {
     compileOnly(Deps.kotlin.stdlib)
     compileOnly(Deps.kotlin.coreKtx)
     compileOnly(Deps.androidX.appcompat)
-    compileOnly(Deps.FPhoenixCorneaE.CommonUtil)
+    implementation(Deps.FPhoenixCorneaE.CommonUtil)
 }
 
 //添加以下配置，否则上传后的jar包看不到注释-------------------------------------------------------------

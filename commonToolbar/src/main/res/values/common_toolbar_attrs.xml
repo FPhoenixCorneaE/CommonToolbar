@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="CommonTitleBar">
+    <declare-styleable name="CommonToolbar">
         <!-- 标题栏背景 图片或颜色 -->
-        <attr name="titleBarColor" format="color" />
+        <attr name="toolbarColor" format="color" />
         <!-- 填充状态栏 -->
         <attr name="fillStatusBar" format="boolean" />
         <!-- 状态栏颜色 -->
@@ -13,7 +13,7 @@
             <enum name="light" value="1" />
         </attr>
         <!-- 标题栏高度 -->
-        <attr name="titleBarHeight" format="dimension" />
+        <attr name="toolbarHeight" format="dimension" />
         <!-- 显示标题栏分割线 -->
         <attr name="showBottomLine" format="boolean" />
         <!-- 标题栏分割线颜色 -->

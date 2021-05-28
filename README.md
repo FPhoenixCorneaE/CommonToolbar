@@ -1,4 +1,4 @@
-# CommonTitlebar
+# CommonToolbar
 通用标题栏，支持左中右常规标题栏设置、沉浸式状态栏、自定义视图；
 
 
@@ -8,7 +8,8 @@ How to include it in your project:
 ```groovy
 allprojects {
 	repositories {
-		...
+		google()
+        mavenCentral()
 		maven { url 'https://jitpack.io' }
 	}
 }
@@ -17,8 +18,6 @@ allprojects {
 **Step 2.** Add the dependency
 ```groovy
 dependencies {
-	implementation("com.github.FPhoenixCorneaE:CommonTitlebar:1.0.5")
-	implementation("com.github.FPhoenixCorneaE:CommonUtil:1.0.9")
-    implementation("com.orhanobut:logger:2.2.0")
+	implementation("com.github.FPhoenixCorneaE:CommonToolbar:1.0.6")
 }
 ```
