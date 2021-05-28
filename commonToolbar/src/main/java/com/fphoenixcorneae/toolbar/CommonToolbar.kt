@@ -234,8 +234,12 @@ class CommonToolbar @JvmOverloads constructor(
      * @param action [MotionAction], 如ACTION_LEFT_TEXT
      * @param extra  中间为搜索框时,如果可输入,点击键盘的搜索按钮,会返回输入关键词
      */
-    var onToolbarClickListener: ((v: View, action: Int, extra: String?, ) -> Unit)? = null
-    var onToolbarDoubleClickListener: OnToolbarDoubleClickListener? = null
+    var onToolbarClickListener: ((v: View, action: Int, extra: String?) -> Unit)? = null
+
+    /**
+     * 标题栏中间布局双击事件监听
+     */
+    var onToolbarCenterDoubleClickListener: ((v: View) -> Unit)? = null
 
     @SuppressLint("ObsoleteSdkInt")
     private fun loadAttributes(
@@ -967,63 +971,41 @@ class CommonToolbar @JvmOverloads constructor(
         onToolbarClickListener?.apply {
             when (v) {
                 centerLayout -> {
-                    onToolbarDoubleClickListener?.run {
+                    onToolbarCenterDoubleClickListener?.let {
                         val currentClickMillis = System.currentTimeMillis()
                         if (currentClickMillis - lastClickMillis < 500) {
-                            onDoubleClicked(v)
+                            it.invoke(v)
                         }
                         lastClickMillis = currentClickMillis
                     }
                 }
                 leftTextView -> {
-                    invoke(
-                        v,
-                        MotionAction.ACTION_LEFT_TEXT, null
-                    )
+                    invoke(v, MotionAction.ACTION_LEFT_TEXT, null)
                 }
                 leftImageButton -> {
-                    invoke(
-                        v,
-                        MotionAction.ACTION_LEFT_BUTTON, null
-                    )
+                    invoke(v, MotionAction.ACTION_LEFT_BUTTON, null)
                 }
                 rightTextView -> {
-                    invoke(
-                        v,
-                        MotionAction.ACTION_RIGHT_TEXT, null
-                    )
+                    invoke(v, MotionAction.ACTION_RIGHT_TEXT, null)
                 }
                 rightImageButton -> {
-                    invoke(
-                        v,
-                        MotionAction.ACTION_RIGHT_BUTTON, null
-                    )
+                    invoke(v, MotionAction.ACTION_RIGHT_BUTTON, null)
                 }
                 centerSearchEditText, centerSearchLeftImageView -> {
-                    invoke(
-                        v,
-                        MotionAction.ACTION_SEARCH, null
-                    )
+                    invoke(v, MotionAction.ACTION_SEARCH, null)
                 }
                 centerSearchRightImageView -> {
                     centerSearchEditText!!.setText("")
-                    if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) { // 语音按钮被点击
-                        invoke(
-                            v,
-                            MotionAction.ACTION_SEARCH_VOICE, null
-                        )
+                    if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
+                        // 语音按钮被点击
+                        invoke(v, MotionAction.ACTION_SEARCH_VOICE, null)
                     } else {
-                        invoke(
-                            v,
-                            MotionAction.ACTION_SEARCH_DELETE, null
-                        )
+                        // 删除按钮被点击
+                        invoke(v, MotionAction.ACTION_SEARCH_DELETE, null)
                     }
                 }
                 centerTextView -> {
-                    invoke(
-                        v,
-                        MotionAction.ACTION_CENTER_TEXT, null
-                    )
+                    invoke(v, MotionAction.ACTION_CENTER_TEXT, null)
                 }
             }
         }
@@ -1086,8 +1068,7 @@ class CommonToolbar @JvmOverloads constructor(
         if (leftView.id == View.NO_ID) {
             leftView.id = ViewUtil.generateViewId()
         }
-        val leftInnerParams =
-            LayoutParams(WRAP_CONTENT, MATCH_PARENT)
+        val leftInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         leftInnerParams.addRule(ALIGN_PARENT_START)
         leftInnerParams.addRule(CENTER_VERTICAL)
         rlMain?.addView(leftView, leftInnerParams)
@@ -1221,29 +1202,6 @@ class CommonToolbar @JvmOverloads constructor(
              */
             var ACTION_CENTER_TEXT = 9
         }
-    }
-
-    /**
-     * 点击事件
-     */
-    interface OnToolbarClickListener {
-        /**
-         * @param v
-         * @param action 对应ACTION_XXX, 如ACTION_LEFT_TEXT
-         * @param extra  中间为搜索框时,如果可输入,点击键盘的搜索按钮,会返回输入关键词
-         */
-        fun onClicked(
-            v: View,
-            @MotionAction action: Int,
-            extra: String?,
-        )
-    }
-
-    /**
-     * 标题栏双击事件监听
-     */
-    interface OnToolbarDoubleClickListener {
-        fun onDoubleClicked(v: View)
     }
 
     companion object {

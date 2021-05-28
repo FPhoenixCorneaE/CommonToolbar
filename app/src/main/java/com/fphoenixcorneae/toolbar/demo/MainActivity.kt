@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.fphoenixcorneae.ext.dp2Px
 import com.fphoenixcorneae.ext.dpToPx
+import com.fphoenixcorneae.ext.toast
 import com.fphoenixcorneae.ext.toastQQStyle
 import com.fphoenixcorneae.ext.view.setTintColor
 import com.fphoenixcorneae.toolbar.CommonToolbar
@@ -49,8 +50,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
                     }
                 }
             }
+            onToolbarCenterDoubleClickListener = {
+                toast("双击了中间")
+            }
         }
         toolbar.centerTextView?.text = "首页"
         mLlContent.addView(toolbar)
+        toolbar.showCenterProgress()
+        toolbar.postDelayed({
+            toolbar.dismissCenterProgress()
+        },2000)
     }
 }
