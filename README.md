@@ -2,6 +2,8 @@
 通用标题栏，支持左中右常规标题栏设置、沉浸式状态栏、背景颜色渐变、自定义视图。
 -----------------------------------------------------------------------------------
 
+[![](https://jitpack.io/v/FPhoenixCorneaE/CommonToolbar.svg)](https://jitpack.io/#FPhoenixCorneaE/CommonToolbar)
+
 <div align="center">
     <img src="https://github.com/FPhoenixCorneaE/CommonToolbar/blob/main/images/pic_common_toolbar.png" width="480" align="top"/>
 </div>
