@@ -5,7 +5,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
+import android.content.res.TypedArray
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.text.Editable
 import android.text.TextUtils
@@ -13,228 +15,804 @@ import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.*
-import android.view.View.OnFocusChangeListener
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import android.widget.TextView.OnEditorActionListener
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import com.fphoenixcorneae.ext.*
-import com.fphoenixcorneae.ext.view.isVisible
+import com.fphoenixcorneae.ext.view.setFocus
 import com.fphoenixcorneae.ext.view.setTintColor
+import com.fphoenixcorneae.ext.view.textString
+import com.fphoenixcorneae.util.ResourceUtil
 import com.fphoenixcorneae.util.ViewUtil
 import com.fphoenixcorneae.util.statusbar.StatusBarUtil
 import kotlin.math.max
 
 /**
- * @desc 通用标题栏
+ * @desc：通用标题栏
+ * @date：2021/08/04 16:47
  */
 class CommonToolbar @JvmOverloads constructor(
     context: Context,
-    attrs: AttributeSet? = null,
+    private val attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr, defStyleRes), View.OnClickListener {
-    private var viewStatusBarFill: View? = null // 状态栏填充视图
 
-    /**
-     * 获取标题栏底部横线
-     */
-    var bottomLine: View? = null // 分隔线视图
-        private set
-    var viewBottomShadow: View? = null // 底部阴影
-        private set
-    private var rlMain: RelativeLayout? = null // 主视图
+    /** 布局加载器 */
+    private val mLayoutInflater by lazy {
+        LayoutInflater.from(context)
+    }
 
-    /**
-     * 获取标题栏左边TextView，对应leftType = textView
-     */
-    var leftTextView: TextView? = null // 左边TextView
-        private set
+    /** 状态栏 */
+    private val mStatusBar by lazy {
+        View(context).apply {
+            id = ViewUtil.generateViewId()
+            val statusBarHeight = StatusBarUtil.getStatusBarHeight(context)
+            layoutParams = LayoutParams(MATCH_PARENT, statusBarHeight).apply {
+                addRule(ALIGN_PARENT_TOP)
+            }
+        }
+    }
 
-    /**
-     * 获取标题栏左边ImageButton，对应leftType = imageButton
-     */
-    var leftImageButton: ImageButton? = null // 左边ImageButton
-        private set
+    /** 标题栏底部分隔线 */
+    private val mBottomLine by lazy {
+        View(context).apply {
+            id = ViewUtil.generateViewId()
+            layoutParams = LayoutParams(MATCH_PARENT, max(1, 0.4f.dp2Px())).apply {
+                addRule(BELOW, mRlMain.id)
+            }
+        }
+    }
 
-    /**
-     * 获取左边自定义布局
-     */
+    /** 标题栏底部阴影 */
+    private val mBottomShadow by lazy {
+        View(context).apply {
+            id = ViewUtil.generateViewId()
+            setBackgroundResource(R.drawable.common_toolbar_shape_bottom_shadow)
+            layoutParams = LayoutParams(MATCH_PARENT, bottomShadowHeight.dp2Px()).apply {
+                addRule(BELOW, mRlMain.id)
+            }
+        }
+    }
+
+    /** 主视图 */
+    private val mRlMain by lazy {
+        RelativeLayout(context).apply {
+            id = ViewUtil.generateViewId()
+            layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                val transparentStatusBar = StatusBarUtil.supportTransparentStatusBar()
+                if (fillStatusBar && transparentStatusBar) {
+                    addRule(BELOW, mStatusBar.id)
+                } else {
+                    addRule(ALIGN_PARENT_TOP)
+                }
+            }
+        }
+    }
+
+    /** 标题栏左边布局参数 */
+    private val mLeftLayoutParams by lazy {
+        LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+            addRule(ALIGN_PARENT_START)
+            addRule(CENTER_VERTICAL)
+        }
+    }
+
+    /** 标题栏中间自定义布局参数 */
+    private val mCenterCustomLayoutParams by lazy {
+        LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+            addRule(CENTER_IN_PARENT)
+            marginStart = PADDING_16
+            marginEnd = PADDING_16
+        }
+    }
+
+    /** 标题栏右边布局参数 */
+    private val mRightLayoutParams by lazy {
+        LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+            addRule(ALIGN_PARENT_END)
+            addRule(CENTER_VERTICAL)
+        }
+    }
+
+    /** 是否撑起状态栏, true 时,标题栏浸入状态栏 */
+    var fillStatusBar = true
+        set(value) {
+            field = value
+            mStatusBar.isVisible = value
+        }
+
+    /** 标题栏左边 TextView，对应 leftType = textView */
+    val leftTextView by lazy {
+        TextView(context).apply {
+            id = ViewUtil.generateViewId()
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            isSingleLine = true
+            setPadding(PADDING_16, 0, PADDING_16, 0)
+            setOnClickListener(this@CommonToolbar)
+        }
+    }
+
+    /** 标题栏左边 ImageButton，对应 leftType = imageButton */
+    val leftImageButton by lazy {
+        ImageButton(context).apply {
+            id = ViewUtil.generateViewId()
+            setBackgroundColor(Color.TRANSPARENT)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            setPadding(PADDING_16, 0, PADDING_16, 0)
+            setOnClickListener(this@CommonToolbar)
+        }
+    }
+
+    /** 左边自定义布局 */
     var leftCustomView: View? = null
         private set
 
-    /**
-     * 获取标题栏右边TextView，对应rightType = textView
-     */
-    var rightTextView: TextView? = null // 右边TextView
-        private set
+    /** 标题栏右边 TextView，对应 rightType = textView */
+    val rightTextView by lazy {
+        TextView(context).apply {
+            id = ViewUtil.generateViewId()
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            isSingleLine = true
+            setPadding(PADDING_16, 0, PADDING_16, 0)
+            setOnClickListener(this@CommonToolbar)
+        }
+    }
 
-    /**
-     * 获取标题栏右边ImageButton，对应rightType = imageButton
-     */
-    var rightImageButton: ImageButton? = null // 右边ImageButton
-        private set
+    /** 标题栏右边 ImageButton，对应 rightType = imageButton */
+    val rightImageButton by lazy {
+        ImageButton(context).apply {
+            id = ViewUtil.generateViewId()
+            setBackgroundColor(Color.TRANSPARENT)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            setPadding(PADDING_16, 0, PADDING_16, 0)
+            setOnClickListener(this@CommonToolbar)
+        }
+    }
 
-    /**
-     * 获取右边自定义布局
-     */
+    /** 标题栏右边自定义布局 */
     var rightCustomView: View? = null
         private set
-    var centerLayout: LinearLayout? = null
-        private set
 
-    /**
-     * 获取标题栏中间TextView，对应centerType = textView
-     */
-    var centerTextView: TextView? = null // 标题栏文字
-        private set
-    var centerSubTextView: TextView? = null // 副标题栏文字
-        private set
-    var progressCenter: ProgressBar? = null // 中间进度条,默认隐藏
-        private set
-
-    /**
-     * 获取搜索框布局，对应centerType = searchView
-     */
-    var centerSearchView: RelativeLayout? = null // 中间搜索框布局
-        private set
-
-    /**
-     * 获取搜索框内部输入框，对应centerType = searchView
-     */
-    var centerSearchEditText: EditText? = null
-        private set
-    var centerSearchLeftImageView: ImageView? = null
-        private set
-
-    /**
-     * 获取搜索框右边图标ImageView，对应centerType = searchView
-     */
-    var centerSearchRightImageView: ImageView? = null
-        private set
-
-    /**
-     * 获取中间自定义布局视图
-     */
-    var centerCustomView: View? = null // 中间自定义视图
-        private set
-    private var fillStatusBar: Boolean = true // 是否撑起状态栏, true时,标题栏浸入状态栏 = false
-    var toolbarColor: Int = Color.WHITE // 标题栏背景颜色 = 0
-        set(value) {
-            field = value
-            rlMain?.setBackgroundColor(value)
-        }
-    var toolbarHeight: Int = 0 // 标题栏高度 = 0
-        set(value) {
-            field = value
-            rlMain?.layoutParams?.height = if (showBottomLine) {
-                toolbarHeight - max(1, context.dp2px(0.4f))
-            } else {
-                toolbarHeight
+    /** 标题栏中间布局 */
+    val centerLayout by lazy {
+        LinearLayout(context).apply {
+            id = ViewUtil.generateViewId()
+            gravity = Gravity.CENTER
+            orientation = LinearLayout.VERTICAL
+            setOnClickListener(this@CommonToolbar)
+            layoutParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+                marginStart = PADDING_16
+                marginEnd = PADDING_16
+                addRule(CENTER_IN_PARENT)
             }
         }
-    var statusBarColor: Int = Color.WHITE // 状态栏颜色 = 0
-        set(value) {
-            field = value
-            viewStatusBarFill?.setBackgroundColor(value)
-        }
-    var statusBarMode: Int = 0 // 状态栏图片模式：0-暗色 非0-亮色
-        set(value) {
-            field = value
-            val window = window ?: return
-            if (value == 0) {
-                StatusBarUtil.setDarkMode(window)
-            } else {
-                StatusBarUtil.setLightMode(window)
+    }
+
+    /** 标题栏中间 TextView，对应 centerType = textView */
+    val centerTextView by lazy {
+        TextView(context).apply {
+            gravity = Gravity.CENTER
+            isSingleLine = true
+            layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            if (isInEditMode.not()) {
+                maxWidth = (context.screenWidth * 3 / 5.0).toInt()
             }
         }
-    var showBottomLine: Boolean = true // 是否显示底部分割线 = false
+    }
+
+    /** 副标题栏文字 */
+    val centerSubTextView by lazy {
+        TextView(context).apply {
+            isGone = true
+            gravity = Gravity.CENTER
+            isSingleLine = true
+            layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        }
+    }
+
+    /** 中间进度条,默认隐藏 */
+    val progressCenter by lazy {
+        ProgressBar(context).apply {
+            isGone = true
+            indeterminateDrawable =
+                ContextCompat.getDrawable(context, R.drawable.common_toolbar_progress_draw)
+            val progressWidth = 18f.dp2Px()
+            layoutParams = LayoutParams(progressWidth, progressWidth).apply {
+                addRule(CENTER_VERTICAL)
+                addRule(START_OF, centerLayout.id)
+            }
+        }
+    }
+
+    /** 中间搜索框布局，对应 centerType = searchView */
+    val centerSearchView by lazy {
+        RelativeLayout(context).apply {
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
+                // 设置边距
+                topMargin = 7f.dp2Px()
+                bottomMargin = 7f.dp2Px()
+                marginStart = PADDING_5
+                marginEnd = PADDING_5
+                // 根据左边的布局类型来设置边距,布局依赖规则
+                when (leftType) {
+                    TYPE_LEFT_TEXT_VIEW -> addRule(END_OF, leftTextView.id)
+                    TYPE_LEFT_IMAGE_BUTTON -> addRule(END_OF, leftImageButton.id)
+                    TYPE_LEFT_CUSTOM_VIEW -> leftCustomView?.let { addRule(END_OF, it.id) }
+                    else -> marginStart = PADDING_16
+                }
+                // 根据右边的布局类型来设置边距,布局依赖规则
+                when (rightType) {
+                    TYPE_RIGHT_TEXT_VIEW -> addRule(START_OF, rightTextView.id)
+                    TYPE_RIGHT_IMAGE_BUTTON -> addRule(START_OF, rightImageButton.id)
+                    TYPE_RIGHT_CUSTOM_VIEW -> rightCustomView?.let { addRule(START_OF, it.id) }
+                    else -> marginEnd = PADDING_16
+                }
+            }
+        }
+    }
+
+    /** 搜索框内部输入框，对应 centerType = searchView */
+    val centerSearchEditText by lazy {
+        EditText(context).apply {
+            setBackgroundColor(Color.TRANSPARENT)
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            setPadding(PADDING_5, 0, PADDING_5, 0)
+            isCursorVisible = false
+            isSingleLine = true
+            ellipsize = TextUtils.TruncateAt.END
+            imeOptions = EditorInfo.IME_ACTION_SEARCH
+            addTextChangedListener(centerSearchWatcher)
+            setOnFocusChangeListener { _, hasFocus ->
+                if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_DELETE) {
+                    val input: CharSequence = textString
+                    centerSearchRightImageView.isVisible = hasFocus && input.isEmpty().not()
+                }
+            }
+            setOnEditorActionListener { v, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    val input: CharSequence = textString
+                    onToolbarClickListener?.invoke(v, MotionAction.ACTION_SEARCH_SUBMIT, input)
+                }
+                false
+            }
+            setOnClickListener {
+                isCursorVisible = true
+            }
+            layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
+                addRule(END_OF, centerSearchLeftImageView.id)
+                addRule(START_OF, centerSearchRightImageView.id)
+                addRule(CENTER_VERTICAL)
+                marginStart = PADDING_5
+                marginEnd = PADDING_5
+            }
+        }
+    }
+
+    /** 搜索框左边图标 ImageView，对应 centerType = searchView */
+    val centerSearchLeftImageView by lazy {
+        ImageView(context).apply {
+            id = ViewUtil.generateViewId()
+            setImageResource(R.drawable.common_toolbar_ic_search)
+            val searchIconWidth = 15f.dp2Px()
+            layoutParams = LayoutParams(searchIconWidth, searchIconWidth).apply {
+                addRule(CENTER_VERTICAL)
+                addRule(ALIGN_PARENT_START)
+                marginStart = PADDING_16
+            }
+            setOnClickListener(this@CommonToolbar)
+        }
+    }
+
+    /**
+     * 获取搜索框右边图标 ImageView，对应centerType = searchView
+     */
+    val centerSearchRightImageView by lazy {
+        ImageView(context).apply {
+            id = ViewUtil.generateViewId()
+            layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                addRule(CENTER_VERTICAL)
+                addRule(ALIGN_PARENT_END)
+                marginEnd = PADDING_16
+            }
+            setOnClickListener(this@CommonToolbar)
+        }
+    }
+
+    /** 中间自定义布局视图 */
+    var centerCustomView: View? = null
+        private set
+
+    /** 标题栏背景颜色 */
+    var toolbarColor: Int = Color.TRANSPARENT
         set(value) {
             field = value
-            bottomLine?.isVisible = value
+            mRlMain.setBackgroundColor(value)
         }
-    var bottomLineColor: Int = 0 // 分割线颜色 = 0
+
+    /** 标题栏高度 */
+    var toolbarHeight: Int = 44.dp2Px()
         set(value) {
             field = value
-            bottomLine?.setBackgroundColor(value)
+            mRlMain.layoutParams?.height = if (showBottomLine) {
+                value - max(1, 0.4f.dp2Px())
+            } else {
+                value
+            }
         }
-    var bottomShadowHeight: Float = 0f // 底部阴影高度 = 0f
+
+    /** 状态栏颜色 */
+    var statusBarColor: Int = Color.TRANSPARENT
+        set(value) {
+            field = value
+            mStatusBar.setBackgroundColor(value)
+        }
+
+    /** 状态栏图片模式：0-暗色 非0-亮色 */
+    var statusBarMode: Int = 0
+        set(value) {
+            field = value
+            if (isInEditMode.not()) {
+                val window = window ?: return
+                if (value == 0) {
+                    StatusBarUtil.setDarkMode(window)
+                } else {
+                    StatusBarUtil.setLightMode(window)
+                }
+            }
+        }
+
+    /** 是否显示底部分割线 */
+    var showBottomLine: Boolean = true
+        set(value) {
+            field = value
+            mBottomLine.isVisible = value
+        }
+
+    /** 分割线颜色 */
+    var bottomLineColor: Int = Color.parseColor("#EEEEEE")
+        set(value) {
+            field = value
+            mBottomLine.setBackgroundColor(value)
+        }
+
+    /** 底部阴影高度 */
+    var bottomShadowHeight: Float = 0f
         set(value) {
             field = value
             if (value > 0f) {
-                viewBottomShadow?.layoutParams?.height = value.toInt()
+                mBottomShadow.layoutParams?.height = value.toInt()
             }
         }
-    var leftType = TYPE_LEFT_NONE
-        // 左边视图类型 = 0
-        set(value) {
-            field = value
-            initMainLeftViews(context)
-        }
-    private var leftText: String? = null // 左边TextView文字
-    private var leftTextColor = NO_ID // 左边TextView颜色 = NO_ID
-    private var leftTextSize = 0f // 左边TextView文字大小 = 0f
-    private var leftTextFontFamily = 0 // 左边TextView文字字体 = 0
-    private var leftTextBold = false // 左边TextView文字是否加粗 = false
-    private var leftDrawable = 0 // 左边TextView drawableLeft资源 = 0
-    private var leftDrawablePadding = 5f // 左边TextView drawablePadding = 0f
-    private var leftImageResource = R.drawable.common_toolbar_reback_selector // 左边图片资源 = 0
-    private var leftImageTint = Color.BLACK
-    private var leftCustomViewRes = 0 // 左边自定义视图布局资源 = 0
-    var rightType = TYPE_RIGHT_NONE // 右边视图类型 = 0
-        set(value) {
-            field = value
-            initMainRightViews(context)
-        }
-    private var rightText: String? = null // 右边TextView文字
-    private var rightTextColor = NO_ID // 右边TextView颜色 = NO_ID
-    private var rightTextSize = 0f // 右边TextView文字大小 = 0f
-    private var rightTextFontFamily = 0 // 右边TextView文字字体 = 0
-    private var rightTextBold = false // 右边TextView文字是否加粗 = false
-    private var rightImageResource = 0 // 右边图片资源 = 0
-    private var rightImageTint = Color.BLACK
-    private var rightCustomViewRes = 0 // 右边自定义视图布局资源 = 0
-    var centerType = TYPE_CENTER_NONE // 中间视图类型 = 0
-        set(value) {
-            field = value
-            initMainCenterViews(context)
-        }
-    private var centerText: String? = null // 中间TextView文字
-    private var centerTextColor = Color.parseColor("#333333") // 中间TextView字体颜色 = 0
-    private var centerTextSize = 0f // 中间TextView字体大小 = 0f
-    private var centerTextFontFamily = 0 // 中间TextView文字字体 = 0
-    private var centerTextBold = true // 中间TextView文字是否加粗 = true
-    private var centerTextMarquee = true // 中间TextView字体是否显示跑马灯效果 = false
-    private var centerSubText: String? = null // 中间subTextView文字
-    private var centerSubTextColor = Color.parseColor("#666666") // 中间subTextView字体颜色 = 0
-    private var centerSubTextSize = 0f // 中间subTextView字体大小 = 0f
-    private var centerSubTextFontFamily = 0 // 中间subTextView文字字体 = 0
-    private var centerSubTextBold = false // 中间subTextView文字是否加粗 = true
 
-    /**
-     * 搜索输入框:是否可输入、提示文字、提示文字颜色、文字颜色、文字大小、背景图片、
-     *           右边按钮类型  0: voice 1: delete = 0
-     */
-    private var centerSearchEditable = true
-    private var centerSearchHintText: String? = resources.getString(R.string.toolbar_search_hint)
-    private var centerSearchHintTextColor = Color.parseColor("#999999")
-    private var centerSearchTextColor = Color.parseColor("#666666")
-    private var centerSearchTextSize = 0f
-    private var centerSearchIconTint = Color.WHITE
-    private var centerSearchBgResource = R.drawable.common_toolbar_search_gray_shape
-    private var centerSearchRightType = TYPE_CENTER_SEARCH_RIGHT_VOICE
-    private var centerCustomViewRes = 0 // 中间自定义布局资源 = 0
-    private var PADDING_5 = dp2px(5f)
-    private var PADDING_16 = dp2px(16f)
+    /** 左边视图类型 */
+    var leftType = TYPE_LEFT_NONE
+        set(value) {
+            field = value
+            initLeftViews()
+        }
+
+    /** 左边 TextView 文字 */
+    var leftText: CharSequence? = null
+        set(value) {
+            field = value
+            leftTextView.text = value
+        }
+
+    /** 左边 TextView 颜色 */
+    var leftTextColor = 0
+        set(value) {
+            field = value
+            if (value != 0) {
+                leftTextView.setTextColor(value)
+            } else if (isInEditMode.not()) {
+                leftTextView.setTextColor(ResourceUtil.getColorStateList(R.color.common_toolbar_selector_text_color))
+            }
+        }
+
+    /** 左边 TextView 文字大小 */
+    var leftTextSize = 16f.spToPx()
+        set(value) {
+            field = value
+            leftTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
+        }
+
+    /** 左边 TextView 文字字体 */
+    var leftTextFontFamily = NO_ID
+        set(value) {
+            field = value
+            if (isInEditMode.not() && value != NO_ID) {
+                leftTextView.typeface = ResourceUtil.getFont(value)
+            }
+        }
+
+    /** 左边 TextView 文字是否加粗 */
+    var leftTextBold = false
+        set(value) {
+            field = value
+            leftTextView.paint.isFakeBoldText = value
+        }
+
+    /** 左边 TextView drawableLeft 资源 */
+    var leftTextDrawableRes = NO_ID
+        @SuppressLint("ObsoleteSdkInt")
+        set(value) {
+            field = value
+            if (isInEditMode.not() && leftTextDrawableRes != NO_ID) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    leftTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(value, 0, 0, 0)
+                } else {
+                    leftTextView.setCompoundDrawablesWithIntrinsicBounds(value, 0, 0, 0)
+                }
+            }
+        }
+
+    /** 左边 TextView drawablePadding */
+    var leftTextDrawablePadding = 5f.dp2Px()
+        set(value) {
+            field = value
+            if (leftTextDrawableRes != NO_ID) {
+                leftTextView.compoundDrawablePadding = value
+            }
+        }
+
+    /** 左边图片资源 */
+    var leftImageRes = R.drawable.common_toolbar_selector_ic_back
+        set(value) {
+            field = value
+            leftImageButton.setImageResource(value)
+        }
+
+    /** 左边图片着色 */
+    var leftImageTint: Int = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                leftImageButton.setTintColor(value)
+            }
+        }
+
+    /** 左边自定义视图布局资源 */
+    var leftCustomViewRes = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                leftCustomView = mLayoutInflater.inflate(value, mRlMain, false)
+                leftCustomView?.apply {
+                    if (id == View.NO_ID) {
+                        id = ViewUtil.generateViewId()
+                    }
+                }
+            }
+        }
+
+    /** 右边视图类型 */
+    var rightType = TYPE_RIGHT_NONE
+        set(value) {
+            field = value
+            initRightViews()
+        }
+
+    /** 右边 TextView 文字 */
+    var rightText: CharSequence? = null
+        set(value) {
+            field = value
+            rightTextView.text = value
+        }
+
+    /** 右边 TextView 颜色 */
+    var rightTextColor = 0
+        set(value) {
+            field = value
+            if (value != 0) {
+                rightTextView.setTextColor(value)
+            } else if (isInEditMode.not()) {
+                rightTextView.setTextColor(ResourceUtil.getColorStateList(R.color.common_toolbar_selector_text_color))
+            }
+        }
+
+    /** 右边 TextView 文字大小 */
+    var rightTextSize = 16f.spToPx()
+        set(value) {
+            field = value
+            rightTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
+        }
+
+    /** 右边 TextView 文字字体 */
+    var rightTextFontFamily = NO_ID
+        set(value) {
+            field = value
+            if (isInEditMode.not() && value != NO_ID) {
+                rightTextView.typeface = ResourcesCompat.getFont(context, value)
+            }
+        }
+
+    /** 右边 TextView 文字是否加粗 */
+    var rightTextBold = false
+        set(value) {
+            field = value
+            rightTextView.paint.isFakeBoldText = rightTextBold
+        }
+
+    /** 右边图片资源 */
+    var rightImageRes = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                rightImageButton.setImageResource(value)
+            }
+        }
+
+    /** 右边图片着色 */
+    var rightImageTint = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                rightImageButton.setTintColor(value)
+            }
+        }
+
+    /** 右边自定义视图布局资源 */
+    var rightCustomViewRes = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                rightCustomView = mLayoutInflater.inflate(value, mRlMain, false)
+                rightCustomView?.apply {
+                    if (id == View.NO_ID) {
+                        id = ViewUtil.generateViewId()
+                    }
+                }
+            }
+        }
+
+    /** 中间视图类型 */
+    var centerType = TYPE_CENTER_NONE
+        set(value) {
+            field = value
+            initCenterViews()
+        }
+
+    /** 中间 TextView 文字 */
+    var centerText: CharSequence? = null
+        set(value) {
+            field = value
+            centerTextView.text = value
+        }
+
+    /** 中间 TextView 字体颜色 */
+    var centerTextColor = Color.parseColor("#333333")
+        set(value) {
+            field = value
+            centerTextView.setTextColor(value)
+        }
+
+    /** 中间 TextView 字体大小 */
+    var centerTextSize = 18f.spToPx()
+        set(value) {
+            field = value
+            centerTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
+        }
+
+    /** 中间 TextView 文字字体 */
+    var centerTextFontFamily = NO_ID
+        set(value) {
+            field = value
+            if (isInEditMode.not() && value != NO_ID) {
+                centerTextView.typeface = ResourceUtil.getFont(value)
+            }
+        }
+
+    /** 中间 TextView 文字是否加粗 */
+    var centerTextBold = true
+        set(value) {
+            field = value
+            centerTextView.paint.isFakeBoldText = value
+        }
+
+    /** 中间 TextView 字体是否显示跑马灯效果 */
+    var centerTextMarquee = true
+        set(value) {
+            field = value
+            if (value) {
+                centerTextView.ellipsize = TextUtils.TruncateAt.MARQUEE
+                centerTextView.marqueeRepeatLimit = -1
+                centerTextView.requestFocus()
+                centerTextView.isSelected = true
+            } else {
+                centerTextView.ellipsize = TextUtils.TruncateAt.END
+            }
+        }
+
+    /** 中间 subTextView 文字 */
+    var centerSubText: CharSequence? = null
+        set(value) {
+            field = value
+            centerSubTextView.text = value
+            if (value.isNullOrEmpty().not()) {
+                centerSubTextView.isVisible = true
+            }
+        }
+
+    /** 中间 subTextView 字体颜色 */
+    var centerSubTextColor = Color.parseColor("#666666")
+        set(value) {
+            field = value
+            centerSubTextView.setTextColor(value)
+        }
+
+    /** 中间 subTextView 字体大小 */
+    var centerSubTextSize = 11f.spToPx()
+        set(value) {
+            field = value
+            centerSubTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
+        }
+
+    /** 中间 subTextView 文字字体 */
+    var centerSubTextFontFamily = NO_ID
+        set(value) {
+            field = value
+            if (isInEditMode.not() && value != NO_ID) {
+                centerSubTextView.typeface = ResourceUtil.getFont(value)
+            }
+        }
+
+    /** 中间 subTextView 文字是否加粗 */
+    var centerSubTextBold = false
+        set(value) {
+            field = value
+            centerSubTextView.paint.isFakeBoldText = value
+        }
+
+    /** 搜索输入框是否可输入 */
+    var centerSearchEditable = true
+        set(value) {
+            field = value
+            if (value.not()) {
+                centerSearchEditText.apply {
+                    isCursorVisible = false
+                    clearFocus()
+                    isFocusable = false
+                    setOnClickListener(this@CommonToolbar)
+                }
+            }
+        }
+
+    /** 搜索输入框提示文字 */
+    var centerSearchHintText: CharSequence? = null
+        set(value) {
+            field = value
+            if (field.isNullOrBlank()) {
+                field = context.getString(R.string.common_toolbar_search_hint)
+            }
+            centerSearchEditText.hint = field
+        }
+
+    /** 搜索输入框提示文字颜色 */
+    var centerSearchHintTextColor = Color.parseColor("#999999")
+        set(value) {
+            field = value
+            centerSearchEditText.setHintTextColor(value)
+        }
+
+    /** 搜索输入框文字颜色 */
+    var centerSearchTextColor = Color.parseColor("#666666")
+        set(value) {
+            field = value
+            centerSearchEditText.setTextColor(value)
+        }
+
+    /** 搜索输入框文字大小 */
+    var centerSearchTextSize = 14f.spToPx()
+        set(value) {
+            field = value
+            centerSearchEditText.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
+        }
+
+    /** 搜索输入框左边图标着色 */
+    var centerSearchLeftIconTint = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                centerSearchLeftImageView.setTintColor(value)
+            }
+        }
+
+    /** 搜索输入框背景图片 */
+    var centerSearchBgRes = R.drawable.common_toolbar_shape_search_bg_default
+        set(value) {
+            field = value
+            centerSearchView.setBackgroundResource(value)
+        }
+
+    /** 搜索框背景颜色 */
+    var centerSearchBgColor = 0
+        set(value) {
+            field = value
+            if (value != 0) {
+                centerSearchView.background = GradientDrawable().apply {
+                    setColor(value)
+                }
+            }
+        }
+
+    /** 搜索框背景圆角半径 */
+    var centerSearchBgCornerRadius = 0f
+        set(value) {
+            field = value
+            if (centerSearchView.background is GradientDrawable) {
+                centerSearchView.background = (centerSearchView.background as GradientDrawable).apply {
+                    cornerRadius = value
+                }
+            }
+        }
+
+    /** 搜索输入框右边按钮类型 (0: voice; 1: delete) */
+    var centerSearchRightType = TYPE_CENTER_SEARCH_RIGHT_VOICE
+
+    /** 搜索输入框右边声音图标图片资源 */
+    var centerSearchRightVoiceRes = R.drawable.common_toolbar_ic_voice
+        set(value) {
+            field = value
+            if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
+                centerSearchRightImageView.setImageResource(value)
+            }
+        }
+
+    /** 搜索输入框右边删除图标图片资源 */
+    var centerSearchRightDeleteRes = R.drawable.common_toolbar_ic_delete
+        set(value) {
+            field = value
+            if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_DELETE) {
+                centerSearchRightImageView.setImageResource(value)
+                centerSearchRightImageView.isGone = true
+            }
+        }
+
+    /** 搜索输入框右边声音图标着色 */
+    var centerSearchRightVoiceTint = 0
+        set(value) {
+            field = value
+            if (value != 0 && centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
+                centerSearchRightImageView.setTintColor(value)
+            }
+        }
+
+    /** 搜索输入框右边删除图标着色 */
+    var centerSearchRightDeleteTint = 0
+        set(value) {
+            field = value
+            if (value != 0 && centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_DELETE) {
+                centerSearchRightImageView.setTintColor(value)
+            }
+        }
+
+    /** 中间自定义布局资源 */
+    var centerCustomViewRes = NO_ID
+        set(value) {
+            field = value
+            if (value != NO_ID) {
+                centerCustomView = mLayoutInflater.inflate(value, mRlMain, false)
+                centerCustomView?.apply {
+                    if (id == View.NO_ID) {
+                        id = ViewUtil.generateViewId()
+                    }
+                }
+            }
+        }
+    private var PADDING_5 = 5f.dp2Px()
+    private var PADDING_16 = 16f.dp2Px()
 
     /**
      * 点击事件
      * @param v
-     * @param action [MotionAction], 如ACTION_LEFT_TEXT
+     * @param action [MotionAction], 如 ACTION_LEFT_TEXT
      * @param extra  中间为搜索框时,如果可输入,点击键盘的搜索按钮,会返回输入关键词
      */
-    var onToolbarClickListener: ((v: View, action: Int, extra: String?) -> Unit)? = null
+    var onToolbarClickListener: ((v: View, action: Int, extra: CharSequence?) -> Unit)? = null
 
     /**
      * 标题栏中间布局双击事件监听
@@ -242,627 +820,288 @@ class CommonToolbar @JvmOverloads constructor(
     var onToolbarCenterDoubleClickListener: ((v: View) -> Unit)? = null
 
     @SuppressLint("ObsoleteSdkInt")
-    private fun loadAttributes(
-        context: Context,
-        attrs: AttributeSet?,
-    ) {
-        val array = context.obtainStyledAttributes(attrs, R.styleable.CommonToolbar)
+    private fun loadAttributes() {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CommonToolbar)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // notice 未引入沉浸式标题栏之前,隐藏标题栏撑起布局
-            fillStatusBar = array.getBoolean(R.styleable.CommonToolbar_fillStatusBar, true)
+            // notice: 未引入沉浸式标题栏之前,隐藏标题栏撑起布局
+            fillStatusBar = typedArray.getBoolean(R.styleable.CommonToolbar_fillStatusBar, fillStatusBar)
         }
-        toolbarColor = array.getColor(R.styleable.CommonToolbar_toolbarColor, Color.WHITE)
-        toolbarHeight = array.getDimension(
-            R.styleable.CommonToolbar_toolbarHeight,
-            context.dpToPx(44f)
-        ).toInt()
-        statusBarColor =
-            array.getColor(R.styleable.CommonToolbar_statusBarColor, Color.WHITE)
-        statusBarMode = array.getInt(R.styleable.CommonToolbar_statusBarMode, 0)
-        showBottomLine = array.getBoolean(R.styleable.CommonToolbar_showBottomLine, true)
-        bottomLineColor = array.getColor(
-            R.styleable.CommonToolbar_bottomLineColor,
-            Color.parseColor("#eeeeee")
-        )
-        bottomShadowHeight = array.getDimension(
-            R.styleable.CommonToolbar_bottomShadowHeight,
-            0f
-        )
-        leftType = array.getInt(
-            R.styleable.CommonToolbar_leftType,
-            TYPE_LEFT_NONE
-        )
-        when (leftType) {
-            TYPE_LEFT_TEXT_VIEW -> {
-                leftText = array.getString(R.styleable.CommonToolbar_leftText)
-                leftTextColor = array.getColor(
-                    R.styleable.CommonToolbar_leftTextColor,
-                    NO_ID
-                )
-                leftTextSize = array.getDimension(
-                    R.styleable.CommonToolbar_leftTextSize,
-                    context.spToPx(16f)
-                )
-                leftTextFontFamily = array.getResourceId(
-                    R.styleable.CommonToolbar_leftTextFontFamily,
-                    0
-                )
-                leftTextBold = array.getBoolean(
-                    R.styleable.CommonToolbar_leftTextBold,
-                    false
-                )
-                leftDrawable = array.getResourceId(R.styleable.CommonToolbar_leftDrawable, 0)
-                leftDrawablePadding =
-                    array.getDimension(R.styleable.CommonToolbar_leftDrawablePadding, 5f)
-            }
-            TYPE_LEFT_IMAGE_BUTTON -> {
-                leftImageResource = array.getResourceId(
-                    R.styleable.CommonToolbar_leftImageResource,
-                    R.drawable.common_toolbar_reback_selector
-                )
-                leftImageTint = array.getColor(
-                    R.styleable.CommonToolbar_leftImageTint,
-                    Color.BLACK
-                )
-            }
-            TYPE_LEFT_CUSTOM_VIEW -> {
-                leftCustomViewRes =
-                    array.getResourceId(R.styleable.CommonToolbar_leftCustomView, 0)
-            }
-        }
-        rightType = array.getInt(
-            R.styleable.CommonToolbar_rightType,
-            TYPE_RIGHT_NONE
-        )
-        when (rightType) {
-            TYPE_RIGHT_TEXT_VIEW -> {
-                rightText = array.getString(R.styleable.CommonToolbar_rightText)
-                rightTextColor = array.getColor(
-                    R.styleable.CommonToolbar_rightTextColor,
-                    NO_ID
-                )
-                rightTextSize = array.getDimension(
-                    R.styleable.CommonToolbar_rightTextSize,
-                    context.spToPx(16f)
-                )
-                rightTextFontFamily = array.getResourceId(
-                    R.styleable.CommonToolbar_rightTextFontFamily,
-                    0
-                )
-                rightTextBold = array.getBoolean(
-                    R.styleable.CommonToolbar_rightTextBold,
-                    false
-                )
-            }
-            TYPE_RIGHT_IMAGE_BUTTON -> {
-                rightImageResource =
-                    array.getResourceId(R.styleable.CommonToolbar_rightImageResource, 0)
-                rightImageTint = array.getColor(
-                    R.styleable.CommonToolbar_rightImageTint,
-                    Color.BLACK
-                )
-            }
-            TYPE_RIGHT_CUSTOM_VIEW -> {
-                rightCustomViewRes =
-                    array.getResourceId(R.styleable.CommonToolbar_rightCustomView, 0)
-            }
-        }
-        centerType = array.getInt(
-            R.styleable.CommonToolbar_centerType,
-            TYPE_CENTER_NONE
-        )
-        when (centerType) {
-            TYPE_CENTER_TEXT_VIEW -> {
-                centerText = array.getString(R.styleable.CommonToolbar_centerText)
-                // 如果当前上下文对象是Activity，就获取Activity的标题
-                if (centerText.isNullOrBlank() && getContext() is Activity) {
-                    // 获取清单文件中的 android:label 属性值
-                    val label = (getContext() as Activity).title
-                    if (label.isNullOrBlank().not()) {
-                        try {
-                            val packageManager = getContext().packageManager
-                            val packageInfo =
-                                packageManager.getPackageInfo(getContext().packageName, 0)
-                            // 如果当前 Activity 没有设置 android:label 属性，则默认会返回 APP 名称，则需要过滤掉
-                            if (label.toString() != packageInfo.applicationInfo.loadLabel(
-                                    packageManager
-                                ).toString()
-                            ) {
-                                // 设置标题
-                                centerText = label.toString()
-                            }
-                        } catch (ignored: PackageManager.NameNotFoundException) {
-                        }
-                    }
-                }
-                centerTextColor = array.getColor(
-                    R.styleable.CommonToolbar_centerTextColor,
-                    Color.parseColor("#333333")
-                )
-                centerTextSize = array.getDimension(
-                    R.styleable.CommonToolbar_centerTextSize,
-                    context.spToPx(18f)
-                )
-                centerTextFontFamily = array.getResourceId(
-                    R.styleable.CommonToolbar_centerTextFontFamily,
-                    0
-                )
-                centerTextBold = array.getBoolean(
-                    R.styleable.CommonToolbar_centerTextBold,
-                    true
-                )
-                centerTextMarquee =
-                    array.getBoolean(R.styleable.CommonToolbar_centerTextMarquee, true)
-                centerSubText = array.getString(R.styleable.CommonToolbar_centerSubText)
-                centerSubTextColor = array.getColor(
-                    R.styleable.CommonToolbar_centerSubTextColor,
-                    Color.parseColor("#666666")
-                )
-                centerSubTextSize = array.getDimension(
-                    R.styleable.CommonToolbar_centerSubTextSize,
-                    context.spToPx(11f)
-                )
-                centerSubTextFontFamily = array.getResourceId(
-                    R.styleable.CommonToolbar_centerSubTextFontFamily,
-                    0
-                )
-                centerSubTextBold = array.getBoolean(
-                    R.styleable.CommonToolbar_centerSubTextBold,
-                    false
-                )
-            }
-            TYPE_CENTER_SEARCH_VIEW -> {
-                centerSearchEditable =
-                    array.getBoolean(R.styleable.CommonToolbar_centerSearchEditable, true)
-                centerSearchHintText =
-                    array.getString(R.styleable.CommonToolbar_centerSearchHintText)
-                centerSearchHintTextColor =
-                    array.getColor(
-                        R.styleable.CommonToolbar_centerSearchHintTextColor,
-                        Color.parseColor("#999999")
-                    )
-                centerSearchTextColor =
-                    array.getColor(
-                        R.styleable.CommonToolbar_centerSearchTextColor,
-                        Color.parseColor("#666666")
-                    )
-                centerSearchTextSize =
-                    array.getDimension(
-                        R.styleable.CommonToolbar_centerSearchTextSize,
-                        context.spToPx(14f)
-                    )
-                centerSearchIconTint = array.getColor(
-                    R.styleable.CommonToolbar_centerSearchIconTint,
-                    Color.WHITE
-                )
-                centerSearchBgResource = array.getResourceId(
-                    R.styleable.CommonToolbar_centerSearchBg,
-                    R.drawable.common_toolbar_search_gray_shape
-                )
-                centerSearchRightType = array.getInt(
-                    R.styleable.CommonToolbar_centerSearchRightType,
-                    TYPE_CENTER_SEARCH_RIGHT_VOICE
-                )
-            }
-            TYPE_CENTER_CUSTOM_VIEW -> {
-                centerCustomViewRes =
-                    array.getResourceId(R.styleable.CommonToolbar_centerCustomView, 0)
-            }
-        }
-        array.recycle()
+        toolbarColor = typedArray.getColor(R.styleable.CommonToolbar_toolbarColor, toolbarColor)
+        toolbarHeight = typedArray.getDimensionPixelSize(R.styleable.CommonToolbar_toolbarHeight, toolbarHeight)
+        statusBarColor = typedArray.getColor(R.styleable.CommonToolbar_statusBarColor, statusBarColor)
+        statusBarMode = typedArray.getInt(R.styleable.CommonToolbar_statusBarMode, statusBarMode)
+        showBottomLine = typedArray.getBoolean(R.styleable.CommonToolbar_showBottomLine, showBottomLine)
+        bottomLineColor = typedArray.getColor(R.styleable.CommonToolbar_bottomLineColor, bottomLineColor)
+        bottomShadowHeight = typedArray.getDimension(R.styleable.CommonToolbar_bottomShadowHeight, bottomShadowHeight)
+        leftType = typedArray.getInt(R.styleable.CommonToolbar_leftType, leftType)
+        rightType = typedArray.getInt(R.styleable.CommonToolbar_rightType, rightType)
+        centerType = typedArray.getInt(R.styleable.CommonToolbar_centerType, centerType)
+        typedArray.recycle()
     }
 
     /**
      * 初始化全局视图
-     *
-     * @param context 上下文
      */
-    private fun initGlobalViews(context: Context) {
+    private fun initGlobalViews() {
         val globalParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
         layoutParams = globalParams
         val transparentStatusBar = StatusBarUtil.supportTransparentStatusBar()
-        // 构建标题栏填充视图
+        // 构建标题栏
         if (fillStatusBar && transparentStatusBar) {
-            val statusBarHeight = StatusBarUtil.getStatusBarHeight(context)
-            viewStatusBarFill = View(context)
-            viewStatusBarFill!!.id = ViewUtil.generateViewId()
-            viewStatusBarFill!!.setBackgroundColor(statusBarColor)
-            val statusBarParams = LayoutParams(MATCH_PARENT, statusBarHeight)
-            statusBarParams.addRule(ALIGN_PARENT_TOP)
-            addView(viewStatusBarFill, statusBarParams)
+            addView(mStatusBar)
         }
         // 构建主视图
-        rlMain = RelativeLayout(context)
-        rlMain!!.id = ViewUtil.generateViewId()
-        rlMain!!.setBackgroundColor(toolbarColor)
-        val mainParams = LayoutParams(MATCH_PARENT, toolbarHeight)
-        if (fillStatusBar && transparentStatusBar) {
-            mainParams.addRule(BELOW, viewStatusBarFill!!.id)
-        } else {
-            mainParams.addRule(ALIGN_PARENT_TOP)
-        }
-        // 计算主布局高度
-        mainParams.height = if (showBottomLine) {
-            toolbarHeight - max(1, context.dp2px(0.4f))
-        } else {
-            toolbarHeight
-        }
-        addView(rlMain, mainParams)
-        // 构建分割线视图
+        addView(mRlMain)
+        // 构建底部分割线视图
         if (showBottomLine) {
-            // 已设置显示标题栏分隔线,5.0以下机型,显示分隔线
-            bottomLine = View(context)
-            bottomLine!!.setBackgroundColor(bottomLineColor)
-            val bottomLineParams = LayoutParams(
-                MATCH_PARENT,
-                max(1, context.dp2px(0.4f))
-            )
-            bottomLineParams.addRule(BELOW, rlMain!!.id)
-            addView(bottomLine, bottomLineParams)
+            addView(mBottomLine)
         }
-        if (bottomShadowHeight >= 0f) {
-            viewBottomShadow = View(context)
-            viewBottomShadow!!.setBackgroundResource(R.drawable.common_toolbar_bottom_shadow)
-            val bottomShadowParams = LayoutParams(
-                MATCH_PARENT,
-                context.dp2px(bottomShadowHeight)
-            )
-            bottomShadowParams.addRule(BELOW, rlMain!!.id)
-            addView(viewBottomShadow, bottomShadowParams)
+        if (bottomShadowHeight > 0f) {
+            addView(mBottomShadow)
         }
     }
 
     /**
      * 初始化主视图左边部分
      * -- add: adaptive RTL
-     *
-     * @param context 上下文
      */
     @SuppressLint("ObsoleteSdkInt")
-    private fun initMainLeftViews(context: Context) {
-        val leftInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
-        leftInnerParams.addRule(ALIGN_PARENT_START)
-        leftInnerParams.addRule(CENTER_VERTICAL)
+    private fun initLeftViews() {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CommonToolbar)
         when (leftType) {
-            TYPE_LEFT_TEXT_VIEW -> { // 初始化左边TextView
-                leftTextView = TextView(context)
-                leftTextView!!.id = ViewUtil.generateViewId()
-                leftTextView!!.text = leftText
-                when {
-                    leftTextColor != NO_ID -> {
-                        leftTextView!!.setTextColor(leftTextColor)
-                    }
-                    else -> {
-                        leftTextView!!.setTextColor(
-                            ContextCompat.getColorStateList(
-                                context,
-                                R.color.common_toolbar_text_selector
-                            )
-                        )
-                    }
-                }
-                leftTextView!!.setTextSize(TypedValue.COMPLEX_UNIT_PX, leftTextSize)
-                leftTextView!!.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                leftTextView!!.isSingleLine = true
-                // 字体
-                if (!isInEditMode && leftTextFontFamily != 0) {
-                    leftTextView!!.typeface = ResourcesCompat.getFont(context, leftTextFontFamily)
-                }
-                // 字体加粗
-                leftTextView!!.paint.isFakeBoldText = leftTextBold
-                leftTextView!!.setOnClickListener(this)
-                // 设置DrawableLeft及DrawablePadding
-                if (leftDrawable != 0) {
-                    leftTextView!!.compoundDrawablePadding = leftDrawablePadding.toInt()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        leftTextView!!.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            leftDrawable,
-                            0,
-                            0,
-                            0
-                        )
-                    } else {
-                        leftTextView!!.setCompoundDrawablesWithIntrinsicBounds(
-                            leftDrawable,
-                            0,
-                            0,
-                            0
-                        )
-                    }
-                }
-                leftTextView!!.setPadding(PADDING_16, 0, PADDING_16, 0)
-                rlMain!!.addView(leftTextView, leftInnerParams)
+            TYPE_LEFT_IMAGE_BUTTON -> {
+                // 初始化左边 ImageButton
+                initLeftImageButton(typedArray)
             }
-            TYPE_LEFT_IMAGE_BUTTON -> { // 初始化左边ImageButton
-                leftImageButton = ImageButton(context)
-                leftImageButton!!.id = ViewUtil.generateViewId()
-                leftImageButton!!.setBackgroundColor(Color.TRANSPARENT)
-                leftImageButton!!.setImageResource(leftImageResource)
-                leftImageButton!!.setTintColor(leftImageTint)
-                leftImageButton!!.setPadding(PADDING_16, 0, PADDING_16, 0)
-                leftImageButton!!.setOnClickListener(this)
-                rlMain!!.addView(leftImageButton, leftInnerParams)
+            TYPE_LEFT_TEXT_VIEW -> {
+                // 初始化左边 TextView
+                initLeftTextView(typedArray)
             }
-            TYPE_LEFT_CUSTOM_VIEW -> { // 初始化自定义View
-                leftCustomView =
-                    LayoutInflater.from(context).inflate(leftCustomViewRes, rlMain, false)
-                leftCustomView?.apply {
-                    if (id == View.NO_ID) {
-                        id = ViewUtil.generateViewId()
+            TYPE_LEFT_CUSTOM_VIEW -> {
+                // 初始化左边自定义布局
+                initLeftCustomView(typedArray)
+            }
+        }
+        typedArray.recycle()
+    }
+
+    /**
+     * 初始化左边 ImageButton
+     */
+    private fun initLeftImageButton(typedArray: TypedArray) {
+        leftImageRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_leftImageRes, leftImageRes)
+        leftImageTint = typedArray.getColor(R.styleable.CommonToolbar_leftImageTint, leftImageTint)
+        mRlMain.addView(leftImageButton, mLeftLayoutParams)
+    }
+
+    /**
+     * 初始化左边 TextView
+     */
+    private fun initLeftTextView(typedArray: TypedArray) {
+        leftText = typedArray.getString(R.styleable.CommonToolbar_leftText)
+        leftTextColor = typedArray.getColor(R.styleable.CommonToolbar_leftTextColor, leftTextColor)
+        leftTextSize = typedArray.getDimension(R.styleable.CommonToolbar_leftTextSize, leftTextSize)
+        leftTextFontFamily =
+            typedArray.getResourceId(R.styleable.CommonToolbar_leftTextFontFamily, leftTextFontFamily)
+        leftTextBold = typedArray.getBoolean(R.styleable.CommonToolbar_leftTextBold, leftTextBold)
+        leftTextDrawableRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_leftTextDrawableRes, leftTextDrawableRes)
+        leftTextDrawablePadding =
+            typedArray.getDimensionPixelSize(R.styleable.CommonToolbar_leftTextDrawablePadding, leftTextDrawablePadding)
+        mRlMain.addView(leftTextView, mLeftLayoutParams)
+    }
+
+    /**
+     * 初始化左边自定义布局
+     */
+    private fun initLeftCustomView(typedArray: TypedArray) {
+        leftCustomViewRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_leftCustomView, leftCustomViewRes)
+        leftCustomView?.let {
+            mRlMain.addView(it, mLeftLayoutParams)
+        }
+    }
+
+    /**
+     * 初始化主视图中间部分
+     */
+    private fun initCenterViews() {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CommonToolbar)
+        when (centerType) {
+            TYPE_CENTER_TEXT_VIEW -> {
+                // 初始化中间标题 TextView
+                initCenterTextView(typedArray)
+            }
+            TYPE_CENTER_SEARCH_VIEW -> {
+                // 初始化中间通用搜索框
+                initCenterSearchView(typedArray)
+            }
+            TYPE_CENTER_CUSTOM_VIEW -> {
+                // 初始化中间自定义布局
+                initCenterCustomView(typedArray)
+            }
+        }
+        typedArray.recycle()
+    }
+
+    /**
+     * 初始化中间标题 TextView
+     */
+    private fun initCenterTextView(typedArray: TypedArray) {
+        centerText = typedArray.getString(R.styleable.CommonToolbar_centerText)
+        // 如果当前上下文对象是 Activity，就获取 Activity 的标题
+        if (centerText.isNullOrBlank() && context is Activity) {
+            // 获取清单文件中的 android:label 属性值
+            val label = (context as Activity).title
+            if (label.isNullOrBlank().not()) {
+                try {
+                    val packageManager = context.packageManager
+                    val packageInfo = packageManager.getPackageInfo(context.packageName, 0)
+                    // 如果当前 Activity 没有设置 android:label 属性，则默认会返回 APP 名称，则需要过滤掉
+                    if (label.toString() != packageInfo.applicationInfo.loadLabel(packageManager).toString()) {
+                        // 设置标题
+                        centerText = label.toString()
                     }
+                } catch (ignored: PackageManager.NameNotFoundException) {
                 }
-                rlMain!!.addView(leftCustomView, leftInnerParams)
             }
+        }
+        centerTextColor = typedArray.getColor(R.styleable.CommonToolbar_centerTextColor, centerTextColor)
+        centerTextSize = typedArray.getDimension(R.styleable.CommonToolbar_centerTextSize, centerTextSize)
+        centerTextFontFamily =
+            typedArray.getResourceId(R.styleable.CommonToolbar_centerTextFontFamily, centerTextFontFamily)
+        centerTextBold = typedArray.getBoolean(R.styleable.CommonToolbar_centerTextBold, centerTextBold)
+        centerTextMarquee =
+            typedArray.getBoolean(R.styleable.CommonToolbar_centerTextMarquee, centerTextMarquee)
+        centerSubText = typedArray.getString(R.styleable.CommonToolbar_centerSubText)
+        centerSubTextColor =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSubTextColor, centerSubTextColor)
+        centerSubTextSize =
+            typedArray.getDimension(R.styleable.CommonToolbar_centerSubTextSize, centerSubTextSize)
+        centerSubTextFontFamily =
+            typedArray.getResourceId(R.styleable.CommonToolbar_centerSubTextFontFamily, centerSubTextFontFamily)
+        centerSubTextBold =
+            typedArray.getBoolean(R.styleable.CommonToolbar_centerSubTextBold, centerSubTextBold)
+
+        centerLayout.addView(centerTextView)
+        // 初始化副标题栏
+        centerLayout.addView(centerSubTextView)
+        // 初始化中间子布局
+        mRlMain.addView(centerLayout)
+        // 初始化进度条, 显示于标题栏左边
+        mRlMain.addView(progressCenter)
+    }
+
+    /**
+     * 初始化中间通用搜索框
+     */
+    private fun initCenterSearchView(typedArray: TypedArray) {
+        centerSearchEditable =
+            typedArray.getBoolean(R.styleable.CommonToolbar_centerSearchEditable, centerSearchEditable)
+        centerSearchHintText = typedArray.getString(R.styleable.CommonToolbar_centerSearchHintText)
+        centerSearchHintTextColor =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSearchHintTextColor, centerSearchHintTextColor)
+        centerSearchTextColor =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSearchTextColor, centerSearchTextColor)
+        centerSearchTextSize =
+            typedArray.getDimension(R.styleable.CommonToolbar_centerSearchTextSize, centerSearchTextSize)
+        centerSearchBgRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_centerSearchBgRes, centerSearchBgRes)
+        centerSearchBgColor =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSearchBgColor, centerSearchBgColor)
+        centerSearchBgCornerRadius =
+            typedArray.getDimension(R.styleable.CommonToolbar_centerSearchBgCornerRadius, centerSearchBgCornerRadius)
+        centerSearchLeftIconTint =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSearchLeftIconTint, centerSearchLeftIconTint)
+        centerSearchRightType =
+            typedArray.getInt(R.styleable.CommonToolbar_centerSearchRightType, centerSearchRightType)
+        centerSearchRightVoiceRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_centerSearchRightVoiceRes, centerSearchRightVoiceRes)
+        centerSearchRightDeleteRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_centerSearchRightDeleteRes, centerSearchRightDeleteRes)
+        centerSearchRightVoiceTint =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSearchRightVoiceTint, centerSearchRightVoiceTint)
+        centerSearchRightDeleteTint =
+            typedArray.getColor(R.styleable.CommonToolbar_centerSearchRightDeleteTint, centerSearchRightDeleteTint)
+
+        mRlMain.addView(centerSearchView)
+        // 初始化搜索框搜索 ImageView
+        centerSearchView.addView(centerSearchLeftImageView)
+        // 初始化搜索框语音 ImageView
+        centerSearchView.addView(centerSearchRightImageView)
+        // 初始化文字输入框
+        centerSearchView.addView(centerSearchEditText)
+    }
+
+    /**
+     * 初始化中间自定义布局
+     */
+    private fun initCenterCustomView(typedArray: TypedArray) {
+        centerCustomViewRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_centerCustomView, centerCustomViewRes)
+        centerCustomView?.let {
+            mRlMain.addView(it, mCenterCustomLayoutParams)
         }
     }
 
     /**
      * 初始化主视图右边部分
      * -- add: adaptive RTL
-     *
-     * @param context 上下文
      */
-    private fun initMainRightViews(context: Context) {
-        val rightInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
-        rightInnerParams.addRule(ALIGN_PARENT_END)
-        rightInnerParams.addRule(CENTER_VERTICAL)
+    private fun initRightViews() {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CommonToolbar)
         when (rightType) {
-            TYPE_RIGHT_TEXT_VIEW -> { // 初始化右边TextView
-                rightTextView = TextView(context)
-                rightTextView!!.id = ViewUtil.generateViewId()
-                rightTextView!!.text = rightText
-                when {
-                    rightTextColor != NO_ID -> {
-                        rightTextView!!.setTextColor(rightTextColor)
-                    }
-                    else -> {
-                        rightTextView!!.setTextColor(
-                            ContextCompat.getColorStateList(
-                                context,
-                                R.color.common_toolbar_text_selector
-                            )
-                        )
-                    }
-                }
-                rightTextView!!.setTextSize(TypedValue.COMPLEX_UNIT_PX, rightTextSize)
-                rightTextView!!.gravity = Gravity.END or Gravity.CENTER_VERTICAL
-                rightTextView!!.isSingleLine = true
-                // 字体
-                if (!isInEditMode && rightTextFontFamily != 0) {
-                    rightTextView!!.typeface = ResourcesCompat.getFont(context, rightTextFontFamily)
-                }
-                // 字体加粗
-                rightTextView!!.paint.isFakeBoldText = rightTextBold
-                rightTextView!!.setPadding(PADDING_16, 0, PADDING_16, 0)
-                rightTextView!!.setOnClickListener(this)
-                rlMain!!.addView(rightTextView, rightInnerParams)
+            TYPE_RIGHT_TEXT_VIEW -> {
+                // 初始化右边 TextView
+                initRightTextView(typedArray)
             }
-            TYPE_RIGHT_IMAGE_BUTTON -> { // 初始化右边ImageBtn
-                rightImageButton = ImageButton(context)
-                rightImageButton!!.id = ViewUtil.generateViewId()
-                rightImageButton!!.setImageResource(rightImageResource)
-                rightImageButton!!.setTintColor(rightImageTint)
-                rightImageButton!!.setBackgroundColor(Color.TRANSPARENT)
-                rightImageButton!!.scaleType = ImageView.ScaleType.CENTER_INSIDE
-                rightImageButton!!.setPadding(PADDING_16, 0, PADDING_16, 0)
-                rightImageButton!!.setOnClickListener(this)
-                rlMain!!.addView(rightImageButton, rightInnerParams)
+            TYPE_RIGHT_IMAGE_BUTTON -> {
+                // 初始化右边 ImageButton
+                initRightImageButton(typedArray)
             }
-            TYPE_RIGHT_CUSTOM_VIEW -> { // 初始化自定义view
-                rightCustomView =
-                    LayoutInflater.from(context).inflate(rightCustomViewRes, rlMain, false)
-                rightCustomView?.apply {
-                    if (id == View.NO_ID) {
-                        id = ViewUtil.generateViewId()
-                    }
-                }
-                rlMain!!.addView(rightCustomView, rightInnerParams)
+            TYPE_RIGHT_CUSTOM_VIEW -> {
+                // 初始化右边自定义布局
+                initRightCustomView(typedArray)
             }
         }
+        typedArray.recycle()
+    }
+
+    private fun initRightTextView(typedArray: TypedArray) {
+        rightText = typedArray.getString(R.styleable.CommonToolbar_rightText)
+        rightTextColor = typedArray.getColor(R.styleable.CommonToolbar_rightTextColor, rightTextColor)
+        rightTextSize = typedArray.getDimension(R.styleable.CommonToolbar_rightTextSize, rightTextSize)
+        rightTextFontFamily =
+            typedArray.getResourceId(R.styleable.CommonToolbar_rightTextFontFamily, rightTextFontFamily)
+        rightTextBold = typedArray.getBoolean(R.styleable.CommonToolbar_rightTextBold, rightTextBold)
+        mRlMain.addView(rightTextView, mRightLayoutParams)
     }
 
     /**
-     * 初始化主视图中间部分
-     *
-     * @param context 上下文
+     * 初始化右边 ImageButton
      */
-    private fun initMainCenterViews(context: Context) {
-        when (centerType) {
-            TYPE_CENTER_TEXT_VIEW -> {
-                // 初始化中间子布局
-                centerLayout = LinearLayout(context)
-                centerLayout!!.id = ViewUtil.generateViewId()
-                centerLayout!!.gravity = Gravity.CENTER
-                centerLayout!!.orientation = LinearLayout.VERTICAL
-                centerLayout!!.setOnClickListener(this)
-                val centerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
-                centerParams.marginStart = PADDING_16
-                centerParams.marginEnd = PADDING_16
-                centerParams.addRule(CENTER_IN_PARENT)
-                rlMain!!.addView(centerLayout, centerParams)
-                // 初始化标题栏TextView
-                centerTextView = TextView(context)
-                centerTextView!!.text = centerText
-                centerTextView!!.setTextColor(centerTextColor)
-                centerTextView!!.setTextSize(TypedValue.COMPLEX_UNIT_PX, centerTextSize)
-                centerTextView!!.gravity = Gravity.CENTER
-                centerTextView!!.isSingleLine = true
-                // 字体
-                if (!isInEditMode && centerTextFontFamily != 0) {
-                    centerTextView!!.typeface =
-                        ResourcesCompat.getFont(context, centerTextFontFamily)
-                }
-                // 字体加粗
-                centerTextView!!.paint.isFakeBoldText = centerTextBold
-                // 设置跑马灯效果
-                centerTextView!!.maxWidth = (context.screenWidth * 3 / 5.0).toInt()
-                if (centerTextMarquee) {
-                    centerTextView!!.ellipsize = TextUtils.TruncateAt.MARQUEE
-                    centerTextView!!.marqueeRepeatLimit = -1
-                    centerTextView!!.requestFocus()
-                    centerTextView!!.isSelected = true
-                }
-                val centerTextParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-                centerLayout!!.addView(centerTextView, centerTextParams)
-                // 初始化进度条, 显示于标题栏左边
-                progressCenter = ProgressBar(context)
-                progressCenter!!.indeterminateDrawable =
-                    ContextCompat.getDrawable(context, R.drawable.common_toolbar_progress_draw)
-                progressCenter!!.visibility = View.GONE
-                val progressWidth = context.dp2px(18f)
-                val progressParams = LayoutParams(progressWidth, progressWidth)
-                progressParams.addRule(CENTER_VERTICAL)
-                progressParams.addRule(START_OF, centerLayout!!.id)
-                rlMain!!.addView(progressCenter, progressParams)
-                // 初始化副标题栏
-                centerSubTextView = TextView(context)
-                centerSubTextView!!.text = centerSubText
-                centerSubTextView!!.setTextColor(centerSubTextColor)
-                centerSubTextView!!.setTextSize(TypedValue.COMPLEX_UNIT_PX, centerSubTextSize)
-                centerSubTextView!!.gravity = Gravity.CENTER
-                centerSubTextView!!.isSingleLine = true
-                // 字体
-                if (!isInEditMode && centerSubTextFontFamily != 0) {
-                    centerSubTextView!!.typeface =
-                        ResourcesCompat.getFont(context, centerSubTextFontFamily)
-                }
-                // 字体加粗
-                centerSubTextView!!.paint.isFakeBoldText = centerSubTextBold
-                if (TextUtils.isEmpty(centerSubText)) {
-                    centerSubTextView!!.visibility = View.GONE
-                }
-                val centerSubTextParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-                centerLayout!!.addView(centerSubTextView, centerSubTextParams)
-            }
-            TYPE_CENTER_SEARCH_VIEW -> {
-                // 初始化通用搜索框
-                centerSearchView = RelativeLayout(context)
-                centerSearchView!!.setBackgroundResource(centerSearchBgResource)
-                val centerParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                // 设置边距
-                centerParams.topMargin = context.dp2px(7f)
-                centerParams.bottomMargin = context.dp2px(7f)
-                // 根据左边的布局类型来设置边距,布局依赖规则
-                when (leftType) {
-                    TYPE_LEFT_TEXT_VIEW -> {
-                        centerParams.addRule(END_OF, leftTextView!!.id)
-                        centerParams.marginStart = PADDING_5
-                    }
-                    TYPE_LEFT_IMAGE_BUTTON -> {
-                        centerParams.addRule(END_OF, leftImageButton!!.id)
-                        centerParams.marginStart = PADDING_5
-                    }
-                    TYPE_LEFT_CUSTOM_VIEW -> {
-                        centerParams.addRule(END_OF, leftCustomView!!.id)
-                        centerParams.marginStart = PADDING_5
-                    }
-                    else -> {
-                        centerParams.marginStart = PADDING_16
-                    }
-                }
-                // 根据右边的布局类型来设置边距,布局依赖规则
-                when (rightType) {
-                    TYPE_RIGHT_TEXT_VIEW -> {
-                        centerParams.addRule(START_OF, rightTextView!!.id)
-                        centerParams.marginEnd = PADDING_5
-                    }
-                    TYPE_RIGHT_IMAGE_BUTTON -> {
-                        centerParams.addRule(START_OF, rightImageButton!!.id)
-                        centerParams.marginEnd = PADDING_5
-                    }
-                    TYPE_RIGHT_CUSTOM_VIEW -> {
-                        centerParams.addRule(START_OF, rightCustomView!!.id)
-                        centerParams.marginEnd = PADDING_5
-                    }
-                    else -> {
-                        centerParams.marginEnd = PADDING_16
-                    }
-                }
-                rlMain!!.addView(centerSearchView, centerParams)
-                // 初始化搜索框搜索ImageView
-                centerSearchLeftImageView = ImageView(context)
-                centerSearchLeftImageView!!.id = ViewUtil.generateViewId()
-                centerSearchLeftImageView!!.setOnClickListener(this)
-                val searchIconWidth = context.dp2px(15f)
-                val searchParams = LayoutParams(searchIconWidth, searchIconWidth)
-                searchParams.addRule(CENTER_VERTICAL)
-                searchParams.addRule(ALIGN_PARENT_START)
-                searchParams.marginStart = PADDING_16
-                centerSearchView!!.addView(centerSearchLeftImageView, searchParams)
-                centerSearchLeftImageView!!.setImageResource(R.drawable.common_toolbar_search_normal)
-                centerSearchLeftImageView!!.setTintColor(centerSearchIconTint)
-                // 初始化搜索框语音ImageView
-                centerSearchRightImageView = ImageView(context)
-                centerSearchRightImageView!!.id = ViewUtil.generateViewId()
-                centerSearchRightImageView!!.setOnClickListener(this)
-                val voiceParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-                voiceParams.addRule(CENTER_VERTICAL)
-                voiceParams.addRule(ALIGN_PARENT_END)
-                voiceParams.marginEnd = PADDING_16
-                centerSearchView!!.addView(centerSearchRightImageView, voiceParams)
-                if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
-                    centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_voice)
-                    centerSearchRightImageView!!.setTintColor(centerSearchIconTint)
-                } else {
-                    centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_delete_normal)
-                    centerSearchRightImageView!!.visibility = View.GONE
-                }
-                // 初始化文字输入框
-                centerSearchEditText = EditText(context)
-                centerSearchEditText!!.setBackgroundColor(Color.TRANSPARENT)
-                centerSearchEditText!!.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-                centerSearchEditText!!.hint = centerSearchHintText
-                centerSearchEditText!!.setHintTextColor(centerSearchHintTextColor)
-                centerSearchEditText!!.setTextColor(centerSearchTextColor)
-                centerSearchEditText!!.setTextSize(
-                    TypedValue.COMPLEX_UNIT_PX,
-                    centerSearchTextSize
-                )
-                centerSearchEditText!!.setPadding(PADDING_5, 0, PADDING_5, 0)
-                if (!centerSearchEditable) {
-                    centerSearchEditText!!.isCursorVisible = false
-                    centerSearchEditText!!.clearFocus()
-                    centerSearchEditText!!.isFocusable = false
-                    centerSearchEditText!!.setOnClickListener(this)
-                }
-                centerSearchEditText!!.isCursorVisible = false
-                centerSearchEditText!!.isSingleLine = true
-                centerSearchEditText!!.ellipsize = TextUtils.TruncateAt.END
-                centerSearchEditText!!.imeOptions = EditorInfo.IME_ACTION_SEARCH
-                centerSearchEditText!!.addTextChangedListener(centerSearchWatcher)
-                centerSearchEditText!!.onFocusChangeListener = focusChangeListener
-                centerSearchEditText!!.setOnEditorActionListener(editorActionListener)
-                centerSearchEditText!!.setOnClickListener {
-                    centerSearchEditText!!.isCursorVisible = true
-                }
-                val searchHintParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                searchHintParams.addRule(END_OF, centerSearchLeftImageView!!.id)
-                searchHintParams.addRule(START_OF, centerSearchRightImageView!!.id)
-                searchHintParams.addRule(CENTER_VERTICAL)
-                searchHintParams.marginStart = PADDING_5
-                searchHintParams.marginEnd = PADDING_5
-                centerSearchView!!.addView(centerSearchEditText, searchHintParams)
-            }
-            TYPE_CENTER_CUSTOM_VIEW -> { // 初始化中间自定义布局
-                centerCustomView =
-                    LayoutInflater.from(context).inflate(centerCustomViewRes, rlMain, false)
-                centerCustomView?.apply {
-                    if (id == View.NO_ID) {
-                        id = ViewUtil.generateViewId()
-                    }
-                }
-                val centerCustomParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
-                centerCustomParams.marginStart = PADDING_16
-                centerCustomParams.marginEnd = PADDING_16
-                centerCustomParams.addRule(CENTER_IN_PARENT)
-                rlMain!!.addView(centerCustomView, centerCustomParams)
-            }
+    private fun initRightImageButton(typedArray: TypedArray) {
+        rightImageRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_rightImageRes, rightImageRes)
+        rightImageTint = typedArray.getColor(R.styleable.CommonToolbar_rightImageTint, rightImageTint)
+        mRlMain.addView(rightImageButton, mRightLayoutParams)
+    }
+
+    /**
+     * 初始化右边自定义布局
+     */
+    private fun initRightCustomView(typedArray: TypedArray) {
+        rightCustomViewRes =
+            typedArray.getResourceId(R.styleable.CommonToolbar_rightCustomView, rightCustomViewRes)
+        rightCustomView?.let {
+            mRlMain.addView(it, mRightLayoutParams)
         }
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (!isInEditMode) {
+        if (isInEditMode.not()) {
             setUpImmersionToolbar()
         }
     }
@@ -910,51 +1149,23 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
         override fun afterTextChanged(s: Editable) =
-            when (centerSearchRightType) {
-                TYPE_CENTER_SEARCH_RIGHT_VOICE -> {
-                    when {
-                        TextUtils.isEmpty(s) -> {
-                            centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_voice)
-                        }
-                        else -> {
-                            centerSearchRightImageView!!.setImageResource(R.drawable.common_toolbar_delete_normal)
-                        }
+            if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
+                if (s.isEmpty()) {
+                    centerSearchRightImageView.setImageResource(centerSearchRightVoiceRes)
+                    if (centerSearchRightVoiceTint != 0) {
+                        centerSearchRightImageView.setTintColor(centerSearchRightVoiceTint)
+                    } else {
+                    }
+                } else {
+                    centerSearchRightImageView.setImageResource(centerSearchRightDeleteRes)
+                    if (centerSearchRightDeleteTint != 0) {
+                        centerSearchRightImageView.setTintColor(centerSearchRightDeleteTint)
+                    } else {
                     }
                 }
-                else -> {
-                    when {
-                        TextUtils.isEmpty(s) -> {
-                            centerSearchRightImageView!!.visibility = View.GONE
-                        }
-                        else -> {
-                            centerSearchRightImageView!!.visibility = View.VISIBLE
-                        }
-                    }
-                }
+            } else {
+                centerSearchRightImageView.isGone = s.isEmpty()
             }
-    }
-    private val focusChangeListener = OnFocusChangeListener { _, hasFocus ->
-        if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_DELETE) {
-            val input = centerSearchEditText!!.text.toString()
-            when {
-                hasFocus && !TextUtils.isEmpty(input) -> {
-                    centerSearchRightImageView!!.visibility = View.VISIBLE
-                }
-                else -> {
-                    centerSearchRightImageView!!.visibility = View.GONE
-                }
-            }
-        }
-    }
-    private val editorActionListener = OnEditorActionListener { v, actionId, _ ->
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            onToolbarClickListener?.invoke(
-                v,
-                MotionAction.ACTION_SEARCH_SUBMIT,
-                centerSearchEditText!!.text.toString()
-            )
-        }
-        false
     }
 
     /**
@@ -965,7 +1176,7 @@ class CommonToolbar @JvmOverloads constructor(
     override fun onClick(v: View) {
         when (v) {
             centerSearchRightImageView -> {
-                centerSearchEditText!!.setText("")
+                centerSearchEditText.setText("")
             }
         }
         onToolbarClickListener?.apply {
@@ -995,7 +1206,7 @@ class CommonToolbar @JvmOverloads constructor(
                     invoke(v, MotionAction.ACTION_SEARCH, null)
                 }
                 centerSearchRightImageView -> {
-                    centerSearchEditText!!.setText("")
+                    centerSearchEditText.editableText?.clear()
                     if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
                         // 语音按钮被点击
                         invoke(v, MotionAction.ACTION_SEARCH_VOICE, null)
@@ -1012,53 +1223,16 @@ class CommonToolbar @JvmOverloads constructor(
     }
 
     /**
-     * 设置背景颜色
-     *
-     * @param color
-     */
-    override fun setBackgroundColor(color: Int) {
-        viewStatusBarFill?.setBackgroundColor(color)
-        rlMain?.setBackgroundColor(color)
-    }
-
-    /**
-     * 设置背景图片
-     *
-     * @param resource
-     */
-    override fun setBackgroundResource(resource: Int) {
-        setBackgroundColor(Color.TRANSPARENT)
-        super.setBackgroundResource(resource)
-    }
-
-    /**
-     * 是否填充状态栏
-     *
-     * @param show
-     */
-    fun showStatusBar(show: Boolean) {
-        viewStatusBarFill?.visibility = when {
-            show -> View.VISIBLE
-            else -> View.GONE
-        }
-    }
-
-    /**
      * 切换状态栏模式
      */
     fun toggleStatusBarMode() {
         val window = window ?: return
         StatusBarUtil.transparentStatusBar(window)
-        when (statusBarMode) {
-            0 -> {
-                statusBarMode = 1
-                StatusBarUtil.setLightMode(window)
-            }
-            else -> {
-                statusBarMode = 0
-                StatusBarUtil.setDarkMode(window)
-            }
-        }
+        ((if (statusBarMode == 0) {
+            1
+        } else {
+            0
+        })).also { statusBarMode = it }
     }
 
     /**
@@ -1071,7 +1245,7 @@ class CommonToolbar @JvmOverloads constructor(
         val leftInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         leftInnerParams.addRule(ALIGN_PARENT_START)
         leftInnerParams.addRule(CENTER_VERTICAL)
-        rlMain?.addView(leftView, leftInnerParams)
+        mRlMain.addView(leftView, leftInnerParams)
     }
 
     /**
@@ -1084,7 +1258,7 @@ class CommonToolbar @JvmOverloads constructor(
         val centerInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         centerInnerParams.addRule(CENTER_IN_PARENT)
         centerInnerParams.addRule(CENTER_VERTICAL)
-        rlMain?.addView(centerView, centerInnerParams)
+        mRlMain.addView(centerView, centerInnerParams)
     }
 
     /**
@@ -1097,56 +1271,42 @@ class CommonToolbar @JvmOverloads constructor(
         val rightInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         rightInnerParams.addRule(ALIGN_PARENT_END)
         rightInnerParams.addRule(CENTER_VERTICAL)
-        rlMain?.addView(rightView, rightInnerParams)
+        mRlMain.addView(rightView, rightInnerParams)
     }
 
     /**
      * 显示中间进度条
      */
     fun showCenterProgress() {
-        progressCenter?.visibility = View.VISIBLE
+        progressCenter.isVisible = true
     }
 
     /**
      * 隐藏中间进度条
      */
     fun dismissCenterProgress() {
-        progressCenter?.visibility = View.GONE
+        progressCenter.isGone = true
     }
 
     /**
      * 显示或隐藏输入法,centerType="searchView"模式下有效
      */
     fun showSoftInputKeyboard(show: Boolean) {
-        centerSearchEditText?.run {
-            when {
-                centerSearchEditable && show -> {
-                    isFocusable = true
-                    isFocusableInTouchMode = true
-                    requestFocus()
-                    openKeyboard()
-                }
-                else -> {
-                    closeKeyboard()
-                }
+        if (centerType == TYPE_CENTER_SEARCH_VIEW) {
+            if (centerSearchEditable && show) {
+                centerSearchEditText.setFocus(true)
+                centerSearchEditText.openKeyboard()
+            } else {
+                centerSearchEditText.closeKeyboard()
             }
         }
     }
 
     /**
-     * 设置搜索框右边图标
-     *
-     * @param res
+     * 获取 SearchView 输入结果
      */
-    fun setSearchRightImageResource(res: Int) {
-        centerSearchRightImageView?.setImageResource(res)
-    }
-
-    /**
-     * 获取SearchView输入结果
-     */
-    val searchKey: String
-        get() = centerSearchEditText?.text?.toString() ?: ""
+    val searchKey: CharSequence
+        get() = centerSearchEditText.textString
 
     @Target(
         AnnotationTarget.FIELD,
@@ -1157,49 +1317,31 @@ class CommonToolbar @JvmOverloads constructor(
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class MotionAction {
         companion object {
-            /**
-             * 左边TextView被点击
-             */
+            /** 左边TextView被点击 */
             var ACTION_LEFT_TEXT = 1
 
-            /**
-             * 左边ImageBtn被点击
-             */
+            /** 左边ImageBtn被点击 */
             var ACTION_LEFT_BUTTON = 2
 
-            /**
-             * 右边TextView被点击
-             */
+            /** 右边TextView被点击 */
             var ACTION_RIGHT_TEXT = 3
 
-            /**
-             * 右边ImageBtn被点击
-             */
+            /** 右边ImageBtn被点击 */
             var ACTION_RIGHT_BUTTON = 4
 
-            /**
-             * 搜索框被点击,搜索框不可输入的状态下会被触发
-             */
+            /** 搜索框被点击,搜索框不可输入的状态下会被触发 */
             var ACTION_SEARCH = 5
 
-            /**
-             * 搜索框输入状态下,键盘提交触发
-             */
+            /** 搜索框输入状态下,键盘提交触发 */
             var ACTION_SEARCH_SUBMIT = 6
 
-            /**
-             * 语音按钮被点击
-             */
+            /** 语音按钮被点击 */
             var ACTION_SEARCH_VOICE = 7
 
-            /**
-             * 搜索删除按钮被点击
-             */
+            /** 搜索删除按钮被点击 */
             var ACTION_SEARCH_DELETE = 8
 
-            /**
-             * 中间文字点击
-             */
+            /** 中间文字点击 */
             var ACTION_CENTER_TEXT = 9
         }
     }
@@ -1224,7 +1366,7 @@ class CommonToolbar @JvmOverloads constructor(
     }
 
     init {
-        loadAttributes(context, attrs)
-        initGlobalViews(context)
+        loadAttributes()
+        initGlobalViews()
     }
 }

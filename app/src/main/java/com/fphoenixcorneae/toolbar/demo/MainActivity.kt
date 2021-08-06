@@ -1,43 +1,42 @@
 package com.fphoenixcorneae.toolbar.demo
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.fphoenixcorneae.ext.dp2Px
-import com.fphoenixcorneae.ext.dpToPx
-import com.fphoenixcorneae.ext.toast
-import com.fphoenixcorneae.ext.toastQQStyle
-import com.fphoenixcorneae.ext.view.setTintColor
+import com.fphoenixcorneae.ext.*
 import com.fphoenixcorneae.toolbar.CommonToolbar
-import kotlinx.android.synthetic.main.activity_main.*
+import com.fphoenixcorneae.toolbar.demo.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity(R.layout.activity_main) {
+class MainActivity : AppCompatActivity() {
 
-    @SuppressLint("UseCompatLoadingForDrawables")
+    private var mViewBinding: ActivityMainBinding? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val toolbar = CommonToolbar(this).apply {
-            leftType = CommonToolbar.TYPE_LEFT_IMAGE_BUTTON
-            leftImageButton?.setTintColor(Color.WHITE)
+        mViewBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mViewBinding!!.root)
+        mViewBinding?.run {
+            rlToolbarProgress.showCenterProgress()
+        }
+        CommonToolbar(this).apply {
+            leftType = CommonToolbar.TYPE_LEFT_TEXT_VIEW
+            leftTextDrawableRes = R.drawable.common_toolbar_selector_ic_back
+            leftText = "返回"
+            leftTextColor = Color.WHITE
             centerType = CommonToolbar.TYPE_CENTER_TEXT_VIEW
-            centerTextView?.apply {
-                setTextColor(Color.WHITE)
-                textSize = 18f
-                paint.isFakeBoldText = true
-            }
+            centerTextColor = Color.WHITE
+            centerTextSize = 18f.dpToPx()
+            centerTextBold = true
             rightType = CommonToolbar.TYPE_RIGHT_TEXT_VIEW
-            rightTextView?.apply {
-                setTextColor(Color.WHITE)
-                textSize = 16f
-                paint.isFakeBoldText = true
-                text = "确定"
-            }
+            rightTextColor = Color.WHITE
+            rightTextSize = 16f.spToPx()
+            rightTextBold = true
+            rightText = "确定"
             showBottomLine = true
             bottomLineColor = Color.RED
             bottomShadowHeight = 10f.dpToPx()
             toolbarColor = Color.BLACK
-            toolbarHeight = 44.dp2Px()
+            toolbarHeight = 60.dp2Px()
             statusBarColor = Color.BLACK
             statusBarMode = 1
             onToolbarClickListener = { v, action, extra ->
@@ -53,12 +52,18 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             onToolbarCenterDoubleClickListener = {
                 toast("双击了中间")
             }
+            centerText = "动态构造 Toolbar"
+            showCenterProgress()
+        }.also {
+            mViewBinding!!.llContent.addView(it)
+            it.postDelayed({
+                it.dismissCenterProgress()
+            }, 2000)
         }
-        toolbar.centerTextView?.text = "首页"
-        mLlContent.addView(toolbar)
-        toolbar.showCenterProgress()
-        toolbar.postDelayed({
-            toolbar.dismissCenterProgress()
-        },2000)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mViewBinding = null
     }
 }

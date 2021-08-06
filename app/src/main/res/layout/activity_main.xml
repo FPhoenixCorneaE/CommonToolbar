@@ -1,15 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <LinearLayout
-        android:id="@+id/mLlContent"
+        android:id="@+id/llContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         tools:context=".MainActivity">
 
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/shape_toolbar_bg_gradient"
+            app:bottomLineColor="@android:color/holo_blue_bright"
+            app:centerType="textView"
+            app:leftImageTint="@android:color/holo_red_dark"
+            app:leftType="imageButton"
+            app:statusBarMode="dark" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="左边文字+中间文字"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:leftText="返回"
+            app:leftTextBold="true"
+            app:leftTextColor="@android:color/holo_red_dark"
+            app:leftTextSize="18sp"
+            app:leftType="textView"
+            app:statusBarColor="@android:color/holo_blue_light"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:id="@+id/rlToolbarProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="左边图标+中间文字（带进度条）"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:leftImageRes="@mipmap/ic_launcher"
+            app:leftType="imageButton"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="自定义左边布局"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:leftCustomView="@layout/custom_left_layout"
+            app:leftType="customView"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="中间文字+右边文字"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:rightText="确定"
+            app:rightTextColor="@android:color/darker_gray"
+            app:rightTextSize="18sp"
+            app:rightType="textView"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="中间文字+右边图标"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:rightImageRes="@mipmap/ic_launcher"
+            app:rightType="imageButton"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="自定义右边布局"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:rightCustomView="@layout/custom_right_layout"
+            app:rightType="customView"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerText="中间跑马灯效果：这是一个很长很长很长很长很长很长的标题"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:rightCustomView="@layout/custom_right_layout"
+            app:rightType="customView"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerSubText="副标题"
+            app:centerSubTextColor="@color/colorPrimaryDark"
+            app:centerText="主标题"
+            app:centerType="textView"
+            app:fillStatusBar="false"
+            app:toolbarColor="@android:color/holo_blue_light" />
+
+        <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:centerSearchBgCornerRadius="20dp"
+            app:centerSearchRightVoiceTint="#ff7050"
+            app:centerType="searchView"
+            app:fillStatusBar="false"
+            app:rightCustomView="@layout/custom_right_layout"
+            app:rightType="customView"
+            app:toolbarColor="@android:color/white" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
