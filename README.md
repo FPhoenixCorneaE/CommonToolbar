@@ -172,3 +172,7 @@ Attrs Introduce
     <attr name="centerCustomView" format="reference" />
 </declare-styleable>
 ```
+
+借鉴
+-------------
+* https://github.com/wuhenzhizao/android-titlebar
