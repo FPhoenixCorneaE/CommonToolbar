@@ -3,7 +3,7 @@
 -----------------------------------------------------------------------------------
 
 <div align="center">
-    <img src="https://github.com/FPhoenixCorneaE/CommonToolbar/blob/master/images/pic_common_toolbar.png" width="480" align="top"/>
+    <img src="https://github.com/FPhoenixCorneaE/CommonToolbar/blob/main/images/pic_common_toolbar.png" width="480" align="top"/>
 </div>
 
 
