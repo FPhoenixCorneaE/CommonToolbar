@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
             statusBarMode = 1
             onToolbarClickListener = { v, action, extra ->
                 when (action) {
-                    CommonToolbar.MotionAction.ACTION_LEFT_BUTTON -> {
+                    CommonToolbar.MotionAction.ACTION_LEFT_TEXT -> {
                         toastQQStyle("点击了返回按钮")
                     }
                     CommonToolbar.MotionAction.ACTION_RIGHT_TEXT -> {
