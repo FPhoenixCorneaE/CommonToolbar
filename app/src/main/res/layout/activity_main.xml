@@ -39,11 +39,10 @@
             app:toolbarColor="@android:color/holo_blue_light" />
 
         <com.fphoenixcorneae.toolbar.CommonToolbar
-            android:id="@+id/rlToolbarProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            app:centerText="左边图标+中间文字（带进度条）"
+            app:centerText="左边图标+中间文字"
             app:centerType="textView"
             app:fillStatusBar="false"
             app:leftImageRes="@mipmap/ic_launcher"
@@ -62,10 +61,11 @@
             app:toolbarColor="@android:color/holo_blue_light" />
 
         <com.fphoenixcorneae.toolbar.CommonToolbar
+            android:id="@+id/rlToolbarProgress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
-            app:centerText="中间文字+右边文字"
+            app:centerText="中间文字（带进度条）+右边文字"
             app:centerType="textView"
             app:fillStatusBar="false"
             app:rightText="确定"

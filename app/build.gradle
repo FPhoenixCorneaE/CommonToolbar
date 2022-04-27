@@ -24,8 +24,8 @@ android {
     }
 
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
@@ -37,10 +37,6 @@ android {
         dataBinding true
     }
 
-    dexOptions {
-        jumboMode true
-    }
-
     lintOptions {
         abortOnError false
     }
@@ -49,12 +45,11 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation Deps.androidX.appcompat
+    implementation Deps.androidX.coreKtx
     implementation Deps.androidX.constraintLayout
-    implementation Deps.kotlin.coreKtx
-    implementation Deps.kotlin.stdlib
 //    implementation Config.FPhoenixCorneaE.CommonToolbar
     implementation project(path: ':commonToolbar')
-    implementation(Deps.FPhoenixCorneaE.CommonUtil)
+    implementation(Deps.FPhoenixCorneaE.Common)
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

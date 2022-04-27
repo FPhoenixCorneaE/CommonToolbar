@@ -3,7 +3,7 @@ package com.fphoenixcorneae.toolbar.demo
 import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.fphoenixcorneae.ext.*
+import com.fphoenixcorneae.common.ext.*
 import com.fphoenixcorneae.toolbar.CommonToolbar
 import com.fphoenixcorneae.toolbar.demo.databinding.ActivityMainBinding
 
@@ -25,18 +25,18 @@ class MainActivity : AppCompatActivity() {
             leftTextColor = Color.WHITE
             centerType = CommonToolbar.TYPE_CENTER_TEXT_VIEW
             centerTextColor = Color.WHITE
-            centerTextSize = 18f.dpToPx()
+            centerTextSize = 18f.sp.toFloat()
             centerTextBold = true
             rightType = CommonToolbar.TYPE_RIGHT_TEXT_VIEW
             rightTextColor = Color.WHITE
-            rightTextSize = 16f.spToPx()
+            rightTextSize = 16f.sp.toFloat()
             rightTextBold = true
             rightText = "确定"
             showBottomLine = true
             bottomLineColor = Color.RED
-            bottomShadowHeight = 10f.dpToPx()
+            bottomShadowHeight = 10f.dp.toFloat()
             toolbarColor = Color.BLACK
-            toolbarHeight = 60.dp2Px()
+            toolbarHeight = 60.dp
             statusBarColor = Color.BLACK
             statusBarMode = 1
             onToolbarClickListener = { v, action, extra ->

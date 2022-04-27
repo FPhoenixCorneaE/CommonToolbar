@@ -21,13 +21,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import com.fphoenixcorneae.ext.*
-import com.fphoenixcorneae.ext.view.setFocus
-import com.fphoenixcorneae.ext.view.setTintColor
-import com.fphoenixcorneae.ext.view.textString
-import com.fphoenixcorneae.util.ResourceUtil
-import com.fphoenixcorneae.util.ViewUtil
-import com.fphoenixcorneae.util.statusbar.StatusBarUtil
+import com.fphoenixcorneae.common.ext.*
+import com.fphoenixcorneae.common.ext.view.setFocus
+import com.fphoenixcorneae.common.ext.view.setTintColor
+import com.fphoenixcorneae.common.ext.view.textString
+import com.fphoenixcorneae.common.util.statusbar.StatusBarUtil
 import kotlin.math.max
 
 /**
@@ -49,7 +47,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 状态栏 */
     private val mStatusBar by lazy {
         View(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             val statusBarHeight = StatusBarUtil.getStatusBarHeight(context)
             layoutParams = LayoutParams(MATCH_PARENT, statusBarHeight).apply {
                 addRule(ALIGN_PARENT_TOP)
@@ -60,8 +58,8 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏底部分隔线 */
     private val mBottomLine by lazy {
         View(context).apply {
-            id = ViewUtil.generateViewId()
-            layoutParams = LayoutParams(MATCH_PARENT, max(1, 0.4f.dp2Px())).apply {
+            id = View.generateViewId()
+            layoutParams = LayoutParams(MATCH_PARENT, max(1, 0.4f.dp)).apply {
                 addRule(BELOW, mRlMain.id)
             }
         }
@@ -70,9 +68,9 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏底部阴影 */
     private val mBottomShadow by lazy {
         View(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             setBackgroundResource(R.drawable.common_toolbar_shape_bottom_shadow)
-            layoutParams = LayoutParams(MATCH_PARENT, bottomShadowHeight.dp2Px()).apply {
+            layoutParams = LayoutParams(MATCH_PARENT, bottomShadowHeight.dp).apply {
                 addRule(BELOW, mRlMain.id)
             }
         }
@@ -81,7 +79,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 主视图 */
     private val mRlMain by lazy {
         RelativeLayout(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 val transparentStatusBar = StatusBarUtil.supportTransparentStatusBar()
                 if (fillStatusBar && transparentStatusBar) {
@@ -128,7 +126,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏左边 TextView，对应 leftType = textView */
     val leftTextView by lazy {
         TextView(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
             isSingleLine = true
             setPadding(PADDING_16, 0, PADDING_16, 0)
@@ -139,7 +137,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏左边 ImageButton，对应 leftType = imageButton */
     val leftImageButton by lazy {
         ImageButton(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             setBackgroundColor(Color.TRANSPARENT)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(PADDING_16, 0, PADDING_16, 0)
@@ -154,7 +152,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏右边 TextView，对应 rightType = textView */
     val rightTextView by lazy {
         TextView(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             gravity = Gravity.END or Gravity.CENTER_VERTICAL
             isSingleLine = true
             setPadding(PADDING_16, 0, PADDING_16, 0)
@@ -165,7 +163,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏右边 ImageButton，对应 rightType = imageButton */
     val rightImageButton by lazy {
         ImageButton(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             setBackgroundColor(Color.TRANSPARENT)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(PADDING_16, 0, PADDING_16, 0)
@@ -180,7 +178,7 @@ class CommonToolbar @JvmOverloads constructor(
     /** 标题栏中间布局 */
     val centerLayout by lazy {
         LinearLayout(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             gravity = Gravity.CENTER
             orientation = LinearLayout.VERTICAL
             setOnClickListener(this@CommonToolbar)
@@ -199,7 +197,7 @@ class CommonToolbar @JvmOverloads constructor(
             isSingleLine = true
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             if (isInEditMode.not()) {
-                maxWidth = (context.screenWidth * 3 / 5.0).toInt()
+                maxWidth = (screenWidth * 3 / 5.0).toInt()
             }
         }
     }
@@ -220,7 +218,7 @@ class CommonToolbar @JvmOverloads constructor(
             isGone = true
             indeterminateDrawable =
                 ContextCompat.getDrawable(context, R.drawable.common_toolbar_progress_draw)
-            val progressWidth = 18f.dp2Px()
+            val progressWidth = 18f.dp
             layoutParams = LayoutParams(progressWidth, progressWidth).apply {
                 addRule(CENTER_VERTICAL)
                 addRule(START_OF, centerLayout.id)
@@ -233,8 +231,8 @@ class CommonToolbar @JvmOverloads constructor(
         RelativeLayout(context).apply {
             layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
                 // 设置边距
-                topMargin = 7f.dp2Px()
-                bottomMargin = 7f.dp2Px()
+                topMargin = 7f.dp
+                bottomMargin = 7f.dp
                 marginStart = PADDING_5
                 marginEnd = PADDING_5
                 // 根据左边的布局类型来设置边距,布局依赖规则
@@ -295,9 +293,9 @@ class CommonToolbar @JvmOverloads constructor(
     /** 搜索框左边图标 ImageView，对应 centerType = searchView */
     val centerSearchLeftImageView by lazy {
         ImageView(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             setImageResource(R.drawable.common_toolbar_ic_search)
-            val searchIconWidth = 15f.dp2Px()
+            val searchIconWidth = 15f.dp
             layoutParams = LayoutParams(searchIconWidth, searchIconWidth).apply {
                 addRule(CENTER_VERTICAL)
                 addRule(ALIGN_PARENT_START)
@@ -312,7 +310,7 @@ class CommonToolbar @JvmOverloads constructor(
      */
     val centerSearchRightImageView by lazy {
         ImageView(context).apply {
-            id = ViewUtil.generateViewId()
+            id = View.generateViewId()
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 addRule(CENTER_VERTICAL)
                 addRule(ALIGN_PARENT_END)
@@ -334,11 +332,11 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 标题栏高度 */
-    var toolbarHeight: Int = 44.dp2Px()
+    var toolbarHeight: Int = 44.dp
         set(value) {
             field = value
             mRlMain.layoutParams?.height = if (showBottomLine) {
-                value - max(1, 0.4f.dp2Px())
+                value - max(1, 0.4f.dp)
             } else {
                 value
             }
@@ -409,12 +407,12 @@ class CommonToolbar @JvmOverloads constructor(
             if (value != 0) {
                 leftTextView.setTextColor(value)
             } else if (isInEditMode.not()) {
-                leftTextView.setTextColor(ResourceUtil.getColorStateList(R.color.common_toolbar_selector_text_color))
+                leftTextView.setTextColor(getColorStateList(R.color.common_toolbar_selector_text_color))
             }
         }
 
     /** 左边 TextView 文字大小 */
-    var leftTextSize = 16f.spToPx()
+    var leftTextSize = 16f.sp.toFloat()
         set(value) {
             field = value
             leftTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
@@ -425,7 +423,7 @@ class CommonToolbar @JvmOverloads constructor(
         set(value) {
             field = value
             if (isInEditMode.not() && value != NO_ID) {
-                leftTextView.typeface = ResourceUtil.getFont(value)
+                leftTextView.typeface = getFont(value)
             }
         }
 
@@ -451,7 +449,7 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 左边 TextView drawablePadding */
-    var leftTextDrawablePadding = 5f.dp2Px()
+    var leftTextDrawablePadding = 5f.dp
         set(value) {
             field = value
             if (leftTextDrawableRes != NO_ID) {
@@ -483,7 +481,7 @@ class CommonToolbar @JvmOverloads constructor(
                 leftCustomView = mLayoutInflater.inflate(value, mRlMain, false)
                 leftCustomView?.apply {
                     if (id == View.NO_ID) {
-                        id = ViewUtil.generateViewId()
+                        id = View.generateViewId()
                     }
                 }
             }
@@ -510,12 +508,12 @@ class CommonToolbar @JvmOverloads constructor(
             if (value != 0) {
                 rightTextView.setTextColor(value)
             } else if (isInEditMode.not()) {
-                rightTextView.setTextColor(ResourceUtil.getColorStateList(R.color.common_toolbar_selector_text_color))
+                rightTextView.setTextColor(getColorStateList(R.color.common_toolbar_selector_text_color))
             }
         }
 
     /** 右边 TextView 文字大小 */
-    var rightTextSize = 16f.spToPx()
+    var rightTextSize = 16f.sp.toFloat()
         set(value) {
             field = value
             rightTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
@@ -563,7 +561,7 @@ class CommonToolbar @JvmOverloads constructor(
                 rightCustomView = mLayoutInflater.inflate(value, mRlMain, false)
                 rightCustomView?.apply {
                     if (id == View.NO_ID) {
-                        id = ViewUtil.generateViewId()
+                        id = View.generateViewId()
                     }
                 }
             }
@@ -591,7 +589,7 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 中间 TextView 字体大小 */
-    var centerTextSize = 18f.spToPx()
+    var centerTextSize = 18f.sp.toFloat()
         set(value) {
             field = value
             centerTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
@@ -602,7 +600,7 @@ class CommonToolbar @JvmOverloads constructor(
         set(value) {
             field = value
             if (isInEditMode.not() && value != NO_ID) {
-                centerTextView.typeface = ResourceUtil.getFont(value)
+                centerTextView.typeface = getFont(value)
             }
         }
 
@@ -645,7 +643,7 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 中间 subTextView 字体大小 */
-    var centerSubTextSize = 11f.spToPx()
+    var centerSubTextSize = 11f.sp.toFloat()
         set(value) {
             field = value
             centerSubTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
@@ -656,7 +654,7 @@ class CommonToolbar @JvmOverloads constructor(
         set(value) {
             field = value
             if (isInEditMode.not() && value != NO_ID) {
-                centerSubTextView.typeface = ResourceUtil.getFont(value)
+                centerSubTextView.typeface = getFont(value)
             }
         }
 
@@ -706,7 +704,7 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 搜索输入框文字大小 */
-    var centerSearchTextSize = 14f.spToPx()
+    var centerSearchTextSize = 14f.sp.toFloat()
         set(value) {
             field = value
             centerSearchEditText.setTextSize(TypedValue.COMPLEX_UNIT_PX, value)
@@ -798,13 +796,13 @@ class CommonToolbar @JvmOverloads constructor(
                 centerCustomView = mLayoutInflater.inflate(value, mRlMain, false)
                 centerCustomView?.apply {
                     if (id == View.NO_ID) {
-                        id = ViewUtil.generateViewId()
+                        id = View.generateViewId()
                     }
                 }
             }
         }
-    private var PADDING_5 = 5f.dp2Px()
-    private var PADDING_16 = 16f.dp2Px()
+    private var PADDING_5 = 5f.dp
+    private var PADDING_16 = 16f.dp
 
     /**
      * 点击事件
@@ -1240,7 +1238,7 @@ class CommonToolbar @JvmOverloads constructor(
      */
     fun setLeftView(leftView: View) {
         if (leftView.id == View.NO_ID) {
-            leftView.id = ViewUtil.generateViewId()
+            leftView.id = View.generateViewId()
         }
         val leftInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         leftInnerParams.addRule(ALIGN_PARENT_START)
@@ -1253,7 +1251,7 @@ class CommonToolbar @JvmOverloads constructor(
      */
     fun setCenterView(centerView: View) {
         if (centerView.id == View.NO_ID) {
-            centerView.id = ViewUtil.generateViewId()
+            centerView.id = View.generateViewId()
         }
         val centerInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         centerInnerParams.addRule(CENTER_IN_PARENT)
@@ -1266,7 +1264,7 @@ class CommonToolbar @JvmOverloads constructor(
      */
     fun setRightView(rightView: View) {
         if (rightView.id == View.NO_ID) {
-            rightView.id = ViewUtil.generateViewId()
+            rightView.id = View.generateViewId()
         }
         val rightInnerParams = LayoutParams(WRAP_CONTENT, MATCH_PARENT)
         rightInnerParams.addRule(ALIGN_PARENT_END)
@@ -1295,9 +1293,9 @@ class CommonToolbar @JvmOverloads constructor(
         if (centerType == TYPE_CENTER_SEARCH_VIEW) {
             if (centerSearchEditable && show) {
                 centerSearchEditText.setFocus(true)
-                centerSearchEditText.openKeyboard()
+                centerSearchEditText.showSoftInput()
             } else {
-                centerSearchEditText.closeKeyboard()
+                centerSearchEditText.hideSoftInput()
             }
         }
     }

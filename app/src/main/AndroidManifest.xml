@@ -12,6 +12,7 @@
         tools:replace="label">
         <activity
             android:name="com.fphoenixcorneae.toolbar.demo.MainActivity"
+            android:exported="true"
             android:label="清单文件 label 属性">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -1,7 +1,5 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.github.dcendents.android-maven'
-group = "com.github.FPhoenixCorneaE"
 
 android {
     compileSdkVersion Deps.android.compileSdkVersion
@@ -42,16 +40,12 @@ android {
     }
 
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
-    }
-
-    dexOptions {
-        jumboMode true
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     lintOptions {
@@ -61,36 +55,10 @@ android {
 
 dependencies {
     compileOnly(fileTree(dir: 'libs', include: ['*.jar']))
-    compileOnly(Deps.kotlin.stdlib)
-    compileOnly(Deps.kotlin.coreKtx)
     compileOnly(Deps.androidX.appcompat)
-    implementation(Deps.FPhoenixCorneaE.CommonUtil)
+    compileOnly(Deps.androidX.coreKtx)
+    implementation(Deps.FPhoenixCorneaE.Common)
 }
 
-//添加以下配置，否则上传后的jar包看不到注释-------------------------------------------------------------
-
-// 指定编码
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
-// 打包源码
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-task javadoc(type: Javadoc) {
-    failOnError false
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    classpath += configurations.compile
-}
-// 制作文档(Javadoc)
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
+apply from: "maven-publish.gradle"
 
