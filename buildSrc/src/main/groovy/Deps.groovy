@@ -13,13 +13,13 @@ class Deps {
             buildToolsVersion: "31.0.0",
             minSdkVersion    : 21,
             targetSdkVersion : 31,
-            versionCode      : 201,
-            versionName      : "2.0.1"
+            versionCode      : 301,
+            versionName      : "3.0.1"
     ]
 
     /* 组件 */
     static FPhoenixCorneaE = [
-            Common       : "com.github.FPhoenixCorneaE:Common:2.0.1",
+            Common       : "com.github.FPhoenixCorneaE:Common:2.0.9",
             CommonToolbar: "com.github.FPhoenixCorneaE:CommonToolbar:${android.versionName}",
     ]
 

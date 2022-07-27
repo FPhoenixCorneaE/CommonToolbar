@@ -1186,7 +1186,7 @@ class CommonToolbar @JvmOverloads constructor(
                             it.invoke(v)
                         }
                         lastClickMillis = currentClickMillis
-                    }
+                    } ?: invoke(v, MotionAction.ACTION_CENTER_LAYOUT, null)
                 }
                 leftTextView -> {
                     invoke(v, MotionAction.ACTION_LEFT_TEXT, null)
@@ -1214,7 +1214,7 @@ class CommonToolbar @JvmOverloads constructor(
                     }
                 }
                 centerTextView -> {
-                    invoke(v, MotionAction.ACTION_CENTER_TEXT, null)
+
                 }
             }
         }
@@ -1339,8 +1339,8 @@ class CommonToolbar @JvmOverloads constructor(
             /** 搜索删除按钮被点击 */
             var ACTION_SEARCH_DELETE = 8
 
-            /** 中间文字点击 */
-            var ACTION_CENTER_TEXT = 9
+            /** 中间区域点击 */
+            var ACTION_CENTER_LAYOUT = 9
         }
     }
 

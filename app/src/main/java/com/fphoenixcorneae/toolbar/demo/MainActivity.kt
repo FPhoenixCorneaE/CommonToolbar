@@ -17,6 +17,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(mViewBinding!!.root)
         mViewBinding?.run {
             rlToolbarProgress.showCenterProgress()
+            rlToolbarProgress.onToolbarClickListener = { v, action, extra ->
+                when (action) {
+                    CommonToolbar.MotionAction.ACTION_CENTER_LAYOUT -> {
+                        toastQQStyle("点击了中间区域")
+                    }
+                }
+            }
         }
         CommonToolbar(this).apply {
             leftType = CommonToolbar.TYPE_LEFT_TEXT_VIEW
@@ -50,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             onToolbarCenterDoubleClickListener = {
-                toast("双击了中间")
+                toast("双击了中间区域")
             }
             centerText = "动态构造 Toolbar"
             showCenterProgress()
