@@ -19,6 +19,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.content.res.getColorOrThrow
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.fphoenixcorneae.common.ext.*
@@ -465,12 +466,10 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 左边图片着色 */
-    var leftImageTint: Int = NO_ID
+    var leftImageTint: Int? = null
         set(value) {
             field = value
-            if (value != NO_ID) {
-                leftImageButton.setTintColor(value)
-            }
+            value?.let { leftImageButton.setTintColor(it) }
         }
 
     /** 左边自定义视图布局资源 */
@@ -545,12 +544,10 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 右边图片着色 */
-    var rightImageTint = NO_ID
+    var rightImageTint: Int? = null
         set(value) {
             field = value
-            if (value != NO_ID) {
-                rightImageButton.setTintColor(value)
-            }
+            value?.let { rightImageButton.setTintColor(it) }
         }
 
     /** 右边自定义视图布局资源 */
@@ -711,12 +708,10 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 搜索输入框左边图标着色 */
-    var centerSearchLeftIconTint = NO_ID
+    var centerSearchLeftIconTint: Int? = null
         set(value) {
             field = value
-            if (value != NO_ID) {
-                centerSearchLeftImageView.setTintColor(value)
-            }
+            value?.let { centerSearchLeftImageView.setTintColor(it) }
         }
 
     /** 搜索输入框背景图片 */
@@ -771,20 +766,20 @@ class CommonToolbar @JvmOverloads constructor(
         }
 
     /** 搜索输入框右边声音图标着色 */
-    var centerSearchRightVoiceTint = 0
+    var centerSearchRightVoiceTint: Int? = null
         set(value) {
             field = value
-            if (value != 0 && centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
-                centerSearchRightImageView.setTintColor(value)
+            if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
+                value?.let { centerSearchRightImageView.setTintColor(it) }
             }
         }
 
     /** 搜索输入框右边删除图标着色 */
-    var centerSearchRightDeleteTint = 0
+    var centerSearchRightDeleteTint: Int? = null
         set(value) {
             field = value
-            if (value != 0 && centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_DELETE) {
-                centerSearchRightImageView.setTintColor(value)
+            if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_DELETE) {
+                value?.let { centerSearchRightImageView.setTintColor(it) }
             }
         }
 
@@ -889,7 +884,7 @@ class CommonToolbar @JvmOverloads constructor(
     private fun initLeftImageButton(typedArray: TypedArray) {
         leftImageRes =
             typedArray.getResourceId(R.styleable.CommonToolbar_leftImageRes, leftImageRes)
-        leftImageTint = typedArray.getColor(R.styleable.CommonToolbar_leftImageTint, leftImageTint)
+        leftImageTint = runCatching { typedArray.getColorOrThrow(R.styleable.CommonToolbar_leftImageTint) }.getOrNull()
         mRlMain.addView(leftImageButton, mLeftLayoutParams)
     }
 
@@ -1011,7 +1006,7 @@ class CommonToolbar @JvmOverloads constructor(
         centerSearchBgCornerRadius =
             typedArray.getDimension(R.styleable.CommonToolbar_centerSearchBgCornerRadius, centerSearchBgCornerRadius)
         centerSearchLeftIconTint =
-            typedArray.getColor(R.styleable.CommonToolbar_centerSearchLeftIconTint, centerSearchLeftIconTint)
+            runCatching { typedArray.getColorOrThrow(R.styleable.CommonToolbar_centerSearchLeftIconTint) }.getOrNull()
         centerSearchRightType =
             typedArray.getInt(R.styleable.CommonToolbar_centerSearchRightType, centerSearchRightType)
         centerSearchRightVoiceRes =
@@ -1019,9 +1014,9 @@ class CommonToolbar @JvmOverloads constructor(
         centerSearchRightDeleteRes =
             typedArray.getResourceId(R.styleable.CommonToolbar_centerSearchRightDeleteRes, centerSearchRightDeleteRes)
         centerSearchRightVoiceTint =
-            typedArray.getColor(R.styleable.CommonToolbar_centerSearchRightVoiceTint, centerSearchRightVoiceTint)
+            runCatching { typedArray.getColorOrThrow(R.styleable.CommonToolbar_centerSearchRightVoiceTint) }.getOrNull()
         centerSearchRightDeleteTint =
-            typedArray.getColor(R.styleable.CommonToolbar_centerSearchRightDeleteTint, centerSearchRightDeleteTint)
+            runCatching { typedArray.getColorOrThrow(R.styleable.CommonToolbar_centerSearchRightDeleteTint) }.getOrNull()
 
         mRlMain.addView(centerSearchView)
         // 初始化搜索框搜索 ImageView
@@ -1082,7 +1077,8 @@ class CommonToolbar @JvmOverloads constructor(
     private fun initRightImageButton(typedArray: TypedArray) {
         rightImageRes =
             typedArray.getResourceId(R.styleable.CommonToolbar_rightImageRes, rightImageRes)
-        rightImageTint = typedArray.getColor(R.styleable.CommonToolbar_rightImageTint, rightImageTint)
+        rightImageTint =
+            runCatching { typedArray.getColorOrThrow(R.styleable.CommonToolbar_rightImageTint) }.getOrNull()
         mRlMain.addView(rightImageButton, mRightLayoutParams)
     }
 
@@ -1146,24 +1142,19 @@ class CommonToolbar @JvmOverloads constructor(
         ) {
         }
 
-        override fun afterTextChanged(s: Editable) =
+        override fun afterTextChanged(s: Editable) {
             if (centerSearchRightType == TYPE_CENTER_SEARCH_RIGHT_VOICE) {
                 if (s.isEmpty()) {
                     centerSearchRightImageView.setImageResource(centerSearchRightVoiceRes)
-                    if (centerSearchRightVoiceTint != 0) {
-                        centerSearchRightImageView.setTintColor(centerSearchRightVoiceTint)
-                    } else {
-                    }
+                    centerSearchRightVoiceTint?.let { centerSearchRightImageView.setTintColor(it) }
                 } else {
                     centerSearchRightImageView.setImageResource(centerSearchRightDeleteRes)
-                    if (centerSearchRightDeleteTint != 0) {
-                        centerSearchRightImageView.setTintColor(centerSearchRightDeleteTint)
-                    } else {
-                    }
+                    centerSearchRightDeleteTint?.let { centerSearchRightImageView.setTintColor(it) }
                 }
             } else {
                 centerSearchRightImageView.isGone = s.isEmpty()
             }
+        }
     }
 
     /**
