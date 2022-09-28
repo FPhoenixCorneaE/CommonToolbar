@@ -13,8 +13,8 @@ class Deps {
             buildToolsVersion: "31.0.0",
             minSdkVersion    : 21,
             targetSdkVersion : 31,
-            versionCode      : 301,
-            versionName      : "3.0.1"
+            versionCode      : 302,
+            versionName      : "3.0.2"
     ]
 
     /* 组件 */
